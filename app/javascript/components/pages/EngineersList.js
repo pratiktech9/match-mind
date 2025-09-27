@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert
@@ -21,12 +21,7 @@ const EngineersList = ({ searchQuery = '' }) => {
 
   const itemsPerPage = 10;
 
-  // Fetch engineers data
-  useEffect(() => {
-    fetchEngineers();
-  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
-
-  const fetchEngineers = async () => {
+  const fetchEngineers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -55,7 +50,12 @@ const EngineersList = ({ searchQuery = '' }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
+
+  // Fetch engineers data
+  useEffect(() => {
+    fetchEngineers();
+  }, [fetchEngineers]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
