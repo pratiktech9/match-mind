@@ -27,6 +27,11 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     get "current_user", to: "users#show"
+
+    # AI Matching routes
+    get "opportunities/:opportunity_id/matches", to: "matching#find_matches_for_opportunity"
+    get "engineers/:engineer_id/matches", to: "matching#find_matches_for_engineer"
+    post "matches", to: "matching#create_match"
   end
 
   # Defines the root path route ("/")
