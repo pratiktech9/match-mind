@@ -5,9 +5,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :engineers
-      resources :skills, only: [:index, :show, :create]
+      resources :skills, only: [ :index, :show, :create ]
       resources :clients
-      resources :matches, only: [:index, :show, :create, :destroy]
+      resources :matches, only: [ :index, :show, :create, :destroy ]
     end
   end
 

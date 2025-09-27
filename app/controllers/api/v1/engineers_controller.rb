@@ -1,5 +1,5 @@
 class Api::V1::EngineersController < Api::V1::ApplicationController
-  before_action :set_engineer, only: [:show, :update, :destroy]
+  before_action :set_engineer, only: [ :show, :update, :destroy ]
 
   # GET /api/v1/engineers
   def index
@@ -13,18 +13,18 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     # Apply status filter
     if params[:status].present?
       case params[:status]
-      when 'available'
+      when "available"
         @engineers = @engineers.available
-      when 'rolling_off_soon'
+      when "rolling_off_soon"
         @engineers = @engineers.rolling_off_soon
-      when 'on_project'
+      when "on_project"
         @engineers = @engineers.on_project
       end
     end
 
     # Apply skills filter
     if params[:skills].present?
-      skill_names = params[:skills].is_a?(Array) ? params[:skills] : params[:skills].split(',')
+      skill_names = params[:skills].is_a?(Array) ? params[:skills] : params[:skills].split(",")
       @engineers = @engineers.with_skills(skill_names)
     end
 
@@ -41,7 +41,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     # Pagination
     page = params[:page]&.to_i || 1
     per_page = params[:per_page]&.to_i || 10
-    per_page = [per_page, 50].min # Max 50 per page
+    per_page = [ per_page, 50 ].min # Max 50 per page
 
     @engineers = @engineers.page(page).per(per_page)
 
@@ -71,9 +71,9 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
         add_skills_to_engineer(@engineer, params[:skill_ids])
       end
 
-      render_success(engineer_json(@engineer), 'Engineer created successfully', :created)
+      render_success(engineer_json(@engineer), "Engineer created successfully", :created)
     else
-      render_error(@engineer.errors.full_messages.join(', '))
+      render_error(@engineer.errors.full_messages.join(", "))
     end
   end
 
@@ -86,16 +86,16 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
         add_skills_to_engineer(@engineer, params[:skill_ids])
       end
 
-      render_success(engineer_json(@engineer), 'Engineer updated successfully')
+      render_success(engineer_json(@engineer), "Engineer updated successfully")
     else
-      render_error(@engineer.errors.full_messages.join(', '))
+      render_error(@engineer.errors.full_messages.join(", "))
     end
   end
 
   # DELETE /api/v1/engineers/:id
   def destroy
     @engineer.destroy
-    render_success(nil, 'Engineer deleted successfully')
+    render_success(nil, "Engineer deleted successfully")
   end
 
   private
@@ -103,7 +103,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
   def set_engineer
     @engineer = Engineer.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    render_error('Engineer not found', :not_found)
+    render_error("Engineer not found", :not_found)
   end
 
   def engineer_params
@@ -158,13 +158,13 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
   def add_skills_to_engineer(engineer, skill_data)
     skill_data.each do |skill_info|
       if skill_info.is_a?(Hash)
-        skill = Skill.find_or_create_by(name: skill_info[:name] || skill_info['name'])
-        level = skill_info[:level] || skill_info['level'] || 'secondary'
+        skill = Skill.find_or_create_by(name: skill_info[:name] || skill_info["name"])
+        level = skill_info[:level] || skill_info["level"] || "secondary"
         engineer.engineer_skills.create(skill: skill, level: level)
       else
         # If it's just an ID or name
         skill = skill_info.to_s.match(/^\d+$/) ? Skill.find(skill_info) : Skill.find_or_create_by(name: skill_info)
-        engineer.engineer_skills.create(skill: skill, level: 'secondary')
+        engineer.engineer_skills.create(skill: skill, level: "secondary")
       end
     end
   end

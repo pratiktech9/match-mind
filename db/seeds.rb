@@ -4,8 +4,8 @@
 
 puts "Creating skills..."
 skills_data = [
-  "Ruby", "Python", "JavaScript", "React", "Ruby on Rails", "Django", 
-  "Node.js", "Vue.js", "PostgreSQL", "MySQL", "MongoDB", "Redis", 
+  "Ruby", "Python", "JavaScript", "React", "Ruby on Rails", "Django",
+  "Node.js", "Vue.js", "PostgreSQL", "MySQL", "MongoDB", "Redis",
   "AWS", "Docker", "Kubernetes", "GraphQL", "REST API", "Machine Learning",
   "TypeScript", "Go", "Java", "Angular", "Microservices", "DevOps", "Agile"
 ]
@@ -30,7 +30,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 85,
     notes: "Full-stack developer with expertise in Ruby on Rails and React. Passionate about building scalable web applications and mentoring junior developers.",
-    skills: ["Ruby", "Ruby on Rails", "React", "PostgreSQL", "AWS", "Docker"]
+    skills: [ "Ruby", "Ruby on Rails", "React", "PostgreSQL", "AWS", "Docker" ]
   },
   {
     name: "Maria Gonzalez",
@@ -42,7 +42,7 @@ engineers_data = [
     utilization: 80,
     target_rate: 95,
     notes: "Senior software engineer specializing in Python and machine learning. Led multiple AI-powered projects from conception to production.",
-    skills: ["Python", "Django", "Machine Learning", "PostgreSQL", "Docker", "AWS"]
+    skills: [ "Python", "Django", "Machine Learning", "PostgreSQL", "Docker", "AWS" ]
   },
   {
     name: "Raj Patel",
@@ -54,7 +54,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 75,
     notes: "DevOps engineer with strong background in cloud infrastructure and automation. Expert in containerization and CI/CD pipelines.",
-    skills: ["JavaScript", "Node.js", "AWS", "Docker", "Kubernetes", "DevOps"]
+    skills: [ "JavaScript", "Node.js", "AWS", "Docker", "Kubernetes", "DevOps" ]
   },
   {
     name: "Sarah Johnson",
@@ -66,7 +66,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 80,
     notes: "Frontend specialist with a keen eye for UX/UI design. Experienced in building responsive and accessible web applications.",
-    skills: ["JavaScript", "React", "TypeScript", "Vue.js", "GraphQL", "REST API"]
+    skills: [ "JavaScript", "React", "TypeScript", "Vue.js", "GraphQL", "REST API" ]
   },
   {
     name: "David Kim",
@@ -79,7 +79,7 @@ engineers_data = [
     target_rate: 120,
     notice_date: 30.days.from_now,
     notes: "Senior architect with extensive experience in microservices and distributed systems. Led engineering teams at multiple startups.",
-    skills: ["Java", "Microservices", "Kubernetes", "PostgreSQL", "Redis", "AWS"]
+    skills: [ "Java", "Microservices", "Kubernetes", "PostgreSQL", "Redis", "AWS" ]
   },
   {
     name: "Anna Mueller",
@@ -91,7 +91,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 90,
     notes: "Backend engineer focused on building robust APIs and database optimization. Strong advocate for clean code and testing.",
-    skills: ["Go", "PostgreSQL", "Redis", "Docker", "REST API", "Microservices"]
+    skills: [ "Go", "PostgreSQL", "Redis", "Docker", "REST API", "Microservices" ]
   },
   {
     name: "Carlos Silva",
@@ -103,7 +103,7 @@ engineers_data = [
     utilization: 75,
     target_rate: 85,
     notes: "Full-stack developer with experience in agile methodologies. Enjoys working on innovative projects and learning new technologies.",
-    skills: ["JavaScript", "Node.js", "React", "MongoDB", "AWS", "Agile"]
+    skills: [ "JavaScript", "Node.js", "React", "MongoDB", "AWS", "Agile" ]
   },
   {
     name: "Emily Brown",
@@ -115,7 +115,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 65,
     notes: "Junior developer eager to grow and contribute to meaningful projects. Strong foundation in modern web technologies.",
-    skills: ["TypeScript", "React", "Node.js", "PostgreSQL", "Docker", "REST API"]
+    skills: [ "TypeScript", "React", "Node.js", "PostgreSQL", "Docker", "REST API" ]
   },
   {
     name: "Luke Taylor",
@@ -127,7 +127,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 100,
     notes: "Senior developer with expertise in both frontend and backend technologies. Passionate about performance optimization.",
-    skills: ["Ruby", "Ruby on Rails", "JavaScript", "Vue.js", "PostgreSQL", "Redis"]
+    skills: [ "Ruby", "Ruby on Rails", "JavaScript", "Vue.js", "PostgreSQL", "Redis" ]
   },
   {
     name: "Priya Sharma",
@@ -139,7 +139,7 @@ engineers_data = [
     utilization: 85,
     target_rate: 78,
     notes: "Cloud solutions architect with focus on scalable infrastructure. Experienced in migrating legacy systems to modern platforms.",
-    skills: ["Python", "AWS", "Docker", "Kubernetes", "MongoDB", "DevOps"]
+    skills: [ "Python", "AWS", "Docker", "Kubernetes", "MongoDB", "DevOps" ]
   },
   {
     name: "James Wilson",
@@ -151,7 +151,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 130,
     notes: "Tech lead with extensive experience in enterprise applications. Specialized in building high-performance, secure systems.",
-    skills: ["Java", "Microservices", "PostgreSQL", "AWS", "Docker", "Agile"]
+    skills: [ "Java", "Microservices", "PostgreSQL", "AWS", "Docker", "Agile" ]
   },
   {
     name: "Nina Petrov",
@@ -163,7 +163,7 @@ engineers_data = [
     utilization: 0,
     target_rate: 70,
     notes: "Frontend developer with strong design background. Focuses on creating intuitive user experiences and modern interfaces.",
-    skills: ["JavaScript", "React", "TypeScript", "GraphQL", "REST API", "Docker"]
+    skills: [ "JavaScript", "React", "TypeScript", "GraphQL", "REST API", "Docker" ]
   }
 ]
 
@@ -198,7 +198,7 @@ clients_data = [
     industry: "Technology",
     employment_type: "Contract",
     notes: "Early stage startup looking for full-stack developers to build MVP",
-    skills_needed: ["Ruby", "Ruby on Rails", "React", "PostgreSQL"]
+    skills_needed: [ "Ruby", "Ruby on Rails", "React", "PostgreSQL" ]
   },
   {
     name: "BigTech Solutions",
@@ -206,7 +206,7 @@ clients_data = [
     industry: "Enterprise Software",
     employment_type: "Full-time",
     notes: "Large enterprise needing senior architects for microservices platform",
-    skills_needed: ["Java", "Microservices", "AWS", "Kubernetes"]
+    skills_needed: [ "Java", "Microservices", "AWS", "Kubernetes" ]
   },
   {
     name: "Innovate Labs",
@@ -214,7 +214,7 @@ clients_data = [
     industry: "AI/ML",
     employment_type: "Contract",
     notes: "R&D lab working on cutting-edge machine learning applications",
-    skills_needed: ["Python", "Machine Learning", "Docker", "AWS"]
+    skills_needed: [ "Python", "Machine Learning", "Docker", "AWS" ]
   }
 ]
 
@@ -224,7 +224,7 @@ clients = clients_data.map do |client_data|
     client_attrs.each { |key, value| c.send("#{key}=", value) }
   end
 
-  # Add required skills to client  
+  # Add required skills to client
   client_skills = client_data[:skills_needed].each_with_index.map do |skill_name, index|
     skill = skills.find { |s| s.name == skill_name }
     if skill
@@ -254,7 +254,7 @@ matches_data = [
 matches = matches_data.map do |match_data|
   engineer = engineers[match_data[:engineer_index]]
   client = clients[match_data[:client_index]]
-  
+
   Match.find_or_create_by!(engineer: engineer, client: client) do |match|
     match.score = match_data[:score]
   end
