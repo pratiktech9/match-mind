@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       resources :engineers
       resources :skills, only: [ :index, :show, :create ]
       resources :clients
+      resources :opportunities
       resources :matches, only: [ :index, :show, :create, :destroy ]
     end
   end

@@ -3,6 +3,7 @@ import { Container, Button, Spinner } from 'react-bootstrap';
 import Layout from './layout/Layout';
 import EngineersList from './pages/EngineersList';
 import ClientsList from './pages/ClientsList';
+import OpportunitiesList from './pages/OpportunitiesList';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('engineers');
@@ -56,7 +57,7 @@ function App() {
       case 'clients':
         return <ClientsList searchQuery={searchQuery} />;
       case 'opportunities':
-        return <OpportunitiesPlaceholder />;
+        return <OpportunitiesList searchQuery={searchQuery} />;
       case 'matching':
         return <MatchingPlaceholder />;
       case 'analytics':
@@ -228,29 +229,6 @@ const DashboardPlaceholder = () => (
               </div>
 );
 
-const OpportunitiesPlaceholder = () => (
-  <div className="page-placeholder">
-    <h2>💼 Opportunities</h2>
-    <p>Opportunities page coming soon...</p>
-    <style>{`
-      .page-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        text-align: center;
-        color: #6b7280;
-      }
-
-      .page-placeholder h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #374151;
-      }
-    `}</style>
-              </div>
-);
 
 const MatchingPlaceholder = () => (
   <div className="page-placeholder">

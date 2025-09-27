@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert, Modal
@@ -30,12 +30,7 @@ const ClientsList = ({ searchQuery = '' }) => {
 
   const itemsPerPage = 10;
 
-  // Fetch clients data
-  useEffect(() => {
-    fetchClients();
-  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
-
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -64,7 +59,12 @@ const ClientsList = ({ searchQuery = '' }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
+
+  // Fetch clients data
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));

@@ -20,7 +20,7 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
     { id: 'dashboard', icon: '🏠', label: 'Dashboard', active: false },
     { id: 'engineers', icon: '👥', label: 'Engineers', active: currentPage === 'engineers' },
     { id: 'clients', icon: '🏢', label: 'Clients', active: currentPage === 'clients' },
-    { id: 'opportunities', icon: '💼', label: 'Opportunities', active: false },
+    { id: 'opportunities', icon: '💼', label: 'Opportunities', active: currentPage === 'opportunities' },
     { id: 'matching', icon: '⚡', label: 'Matching', active: false },
     { id: 'analytics', icon: '📊', label: 'Analytics', active: false },
     { id: 'settings', icon: '⚙️', label: 'Settings', active: false },
