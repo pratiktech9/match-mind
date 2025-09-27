@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import {
   Navbar,
-  Nav,
   Form,
   Button,
   Badge,
   Dropdown
 } from 'react-bootstrap';
 
-const Header = ({ title, user, onSearch, onNotificationClick, onLogout }) => {
+const Header = ({ title, user, onSearch, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchSubmit = (e) => {
