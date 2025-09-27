@@ -22,11 +22,11 @@ class User < ApplicationRecord
 
   # Instance methods
   def admin?
-    role == 'admin'
+    role == "admin"
   end
 
   def manager?
-    role == 'manager' || admin?
+    role == "manager" || admin?
   end
 
   def token_expired?

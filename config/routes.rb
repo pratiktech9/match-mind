@@ -10,8 +10,8 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Authentication routes
-  get '/auth/:provider/callback', to: 'sessions#google_auth'
-  delete '/logout', to: 'sessions#destroy', as: :logout
+  get "/auth/:provider/callback", to: "sessions#google_auth"
+  delete "/logout", to: "sessions#destroy", as: :logout
 
   # Defines the root path route ("/")
   # root "posts#index"

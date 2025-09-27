@@ -10,7 +10,7 @@ class Skill < ApplicationRecord
 
   # Scopes
   scope :by_category, ->(category) { where("name ILIKE ?", "%#{category}%") }
-  scope :popular, -> { joins(:engineer_skills).group('skills.id').order('COUNT(engineer_skills.id) DESC') }
+  scope :popular, -> { joins(:engineer_skills).group("skills.id").order("COUNT(engineer_skills.id) DESC") }
 
   # Class methods
   def self.search(query)
@@ -18,22 +18,22 @@ class Skill < ApplicationRecord
   end
 
   def self.tech_stack
-    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?", 
+    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?",
           "%frontend%", "%backend%", "%fullstack%", "%react%", "%rails%")
   end
 
   def self.programming_languages
-    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?", 
+    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?",
           "%ruby%", "%python%", "%javascript%", "%typescript%", "%java%", "%go%")
   end
 
   def self.frameworks
-    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?", 
+    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?",
           "%rails%", "%react%", "%vue%", "%angular%", "%node%")
   end
 
   def self.databases
-    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?", 
+    where("name ILIKE ? OR name ILIKE ? OR name ILIKE ? OR name ILIKE ?",
           "%postgresql%", "%mysql%", "%mongodb%", "%redis%")
   end
 
@@ -51,7 +51,7 @@ class Skill < ApplicationRecord
   end
 
   def is_tech_stack?
-    name.downcase.include?('frontend') || name.downcase.include?('backend') || name.downcase.include?('fullstack')
+    name.downcase.include?("frontend") || name.downcase.include?("backend") || name.downcase.include?("fullstack")
   end
 
   def is_programming_language?
@@ -67,10 +67,10 @@ class Skill < ApplicationRecord
   end
 
   def category
-    return 'tech_stack' if is_tech_stack?
-    return 'programming_language' if is_programming_language?
-    return 'framework' if is_framework?
-    return 'database' if is_database?
-    'other'
+    return "tech_stack" if is_tech_stack?
+    return "programming_language" if is_programming_language?
+    return "framework" if is_framework?
+    return "database" if is_database?
+    "other"
   end
 end

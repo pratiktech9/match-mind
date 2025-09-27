@@ -8,7 +8,7 @@ class Match < ApplicationRecord
   validates :engineer_id, uniqueness: { scope: :client_id }
 
   # Scopes
-  scope :high_score, ->(min_score = 80) { where('score >= ?', min_score) }
+  scope :high_score, ->(min_score = 80) { where("score >= ?", min_score) }
   scope :by_engineer, ->(engineer) { where(engineer: engineer) }
   scope :by_client, ->(client) { where(client: client) }
   scope :recent, -> { order(created_at: :desc) }
@@ -59,10 +59,10 @@ class Match < ApplicationRecord
 
   def match_quality
     case score
-    when 80..100 then 'Excellent'
-    when 60..79 then 'Good'
-    when 40..59 then 'Fair'
-    else 'Poor'
+    when 80..100 then "Excellent"
+    when 60..79 then "Good"
+    when 40..59 then "Fair"
+    else "Poor"
     end
   end
 
@@ -75,13 +75,13 @@ class Match < ApplicationRecord
       overlap_count: overlap.count,
       engineer_skills: engineer_skills,
       client_skills: client_skills,
-      overlap_percentage: (overlap.count.to_f / [engineer_skills.count, client_skills.count].max * 100).round(1)
+      overlap_percentage: (overlap.count.to_f / [ engineer_skills.count, client_skills.count ].max * 100).round(1)
     }
   end
 
   def compatibility_factors
     factors = []
-    
+
     # Skill compatibility
     skill_overlap = skill_overlap
     if skill_overlap[:overlap_percentage] >= 70

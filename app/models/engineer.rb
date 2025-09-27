@@ -13,9 +13,9 @@ class Engineer < ApplicationRecord
   validates :target_rate, numericality: { greater_than: 0 }, allow_nil: true
 
   # Scopes
-  scope :available, -> { where(status: 'available') }
-  scope :rolling_off_soon, -> { where(status: 'rolling_off_soon') }
-  scope :on_project, -> { where(status: 'on_project') }
+  scope :available, -> { where(status: "available") }
+  scope :rolling_off_soon, -> { where(status: "rolling_off_soon") }
+  scope :on_project, -> { where(status: "on_project") }
   scope :by_country, ->(country) { where(country: country) }
   scope :by_industry, ->(industry) { where(industry_experience: industry) }
   scope :by_utilization, ->(min, max = 100) { where(utilization: min..max) }
@@ -39,23 +39,23 @@ class Engineer < ApplicationRecord
 
   # Instance methods
   def available?
-    status == 'available'
+    status == "available"
   end
 
   def rolling_off_soon?
-    status == 'rolling_off_soon'
+    status == "rolling_off_soon"
   end
 
   def on_project?
-    status == 'on_project'
+    status == "on_project"
   end
 
   def primary_skills
-    engineer_skills.where(level: 'primary').includes(:skill)
+    engineer_skills.where(level: "primary").includes(:skill)
   end
 
   def secondary_skills
-    engineer_skills.where(level: 'secondary').includes(:skill)
+    engineer_skills.where(level: "secondary").includes(:skill)
   end
 
   def skill_names
@@ -77,14 +77,14 @@ class Engineer < ApplicationRecord
   end
 
   def fullstack?
-    skill_names.any? { |skill| skill.downcase.include?('fullstack') }
+    skill_names.any? { |skill| skill.downcase.include?("fullstack") }
   end
 
   def frontend?
-    skill_names.any? { |skill| skill.downcase.include?('frontend') || skill.downcase.include?('react') || skill.downcase.include?('vue') || skill.downcase.include?('angular') }
+    skill_names.any? { |skill| skill.downcase.include?("frontend") || skill.downcase.include?("react") || skill.downcase.include?("vue") || skill.downcase.include?("angular") }
   end
 
   def backend?
-    skill_names.any? { |skill| skill.downcase.include?('backend') || skill.downcase.include?('rails') || skill.downcase.include?('node') || skill.downcase.include?('python') }
+    skill_names.any? { |skill| skill.downcase.include?("backend") || skill.downcase.include?("rails") || skill.downcase.include?("node") || skill.downcase.include?("python") }
   end
 end

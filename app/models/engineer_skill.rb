@@ -8,26 +8,26 @@ class EngineerSkill < ApplicationRecord
   validates :engineer_id, uniqueness: { scope: :skill_id }
 
   # Scopes
-  scope :primary, -> { where(level: 'primary') }
-  scope :secondary, -> { where(level: 'secondary') }
+  scope :primary, -> { where(level: "primary") }
+  scope :secondary, -> { where(level: "secondary") }
   scope :by_skill, ->(skill_name) { joins(:skill).where(skills: { name: skill_name }) }
 
   # Class methods
   def self.primary_skills_for(engineer)
-    where(engineer: engineer, level: 'primary').includes(:skill)
+    where(engineer: engineer, level: "primary").includes(:skill)
   end
 
   def self.secondary_skills_for(engineer)
-    where(engineer: engineer, level: 'secondary').includes(:skill)
+    where(engineer: engineer, level: "secondary").includes(:skill)
   end
 
   # Instance methods
   def primary?
-    level == 'primary'
+    level == "primary"
   end
 
   def secondary?
-    level == 'secondary'
+    level == "secondary"
   end
 
   def skill_name
