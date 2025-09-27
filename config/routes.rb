@@ -11,7 +11,13 @@ Rails.application.routes.draw do
 
   # Authentication routes
   get "/auth/:provider/callback", to: "sessions#google_auth"
+  get "/auth/failure", to: "sessions#failure"
   delete "/logout", to: "sessions#destroy", as: :logout
+
+  # API routes
+  namespace :api do
+    get "current_user", to: "users#show"
+  end
 
   # Defines the root path route ("/")
   root "home#index"

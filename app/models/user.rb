@@ -17,7 +17,18 @@ class User < ApplicationRecord
       user.image_url = auth.info.image
       user.token = auth.credentials.token
       user.token_expires_at = Time.at(auth.credentials.expires_at) if auth.credentials.expires_at
+      user.role = "user" # Default role for new users
     end
+  end
+
+  # Check if user is from allowed domain (internal users only)
+  def internal_user?
+    return false unless email.present?
+
+    allowed_domains = ENV["ALLOWED_EMAIL_DOMAINS"]&.split(",") || []
+    return true if allowed_domains.empty? # If no domains specified, allow all
+
+    allowed_domains.any? { |domain| email.end_with?("@#{domain.strip}") }
   end
 
   # Instance methods

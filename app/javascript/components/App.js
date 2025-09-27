@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -6,6 +6,8 @@ function App() {
   const [showModal, setShowModal] = useState(false)
   const [activeTab, setActiveTab] = useState('home')
   const [showToast, setShowToast] = useState(false)
+  const [user, setUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const sampleData = [
     { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active' },
@@ -20,6 +22,42 @@ function App() {
   const showToastMessage = () => {
     setShowToast(true)
     setTimeout(() => setShowToast(false), 3000)
+  }
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    fetch('/api/current_user')
+      .then(response => response.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user)
+        }
+        setIsLoading(false)
+      })
+      .catch(error => {
+        console.error('Error checking auth status:', error)
+        setIsLoading(false)
+      })
+  }, [])
+
+  const handleGoogleLogin = () => {
+    window.location.href = '/auth/google_oauth2'
+  }
+
+  const handleLogout = () => {
+    fetch('/logout', {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+    .then(() => {
+      setUser(null)
+      window.location.href = '/'
+    })
+    .catch(error => {
+      console.error('Logout error:', error)
+    })
   }
 
   return (
@@ -44,12 +82,32 @@ function App() {
               </li>
             </ul>
             <ul className="navbar-nav">
-              <li className="nav-item">
-                <button className="btn btn-outline-light btn-sm me-2">Sign In</button>
-              </li>
-              <li className="nav-item">
-                <button className="btn btn-primary btn-sm">Sign Up</button>
-              </li>
+              {user ? (
+                <>
+                  <li className="nav-item dropdown">
+                    <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                      <img src={user.image_url} alt={user.name} className="rounded-circle me-2" width="24" height="24" />
+                      {user.name}
+                    </a>
+                    <ul className="dropdown-menu">
+                      <li><a className="dropdown-item" href="#">Profile</a></li>
+                      <li><a className="dropdown-item" href="#">Settings</a></li>
+                      <li><hr className="dropdown-divider" /></li>
+                      <li><button className="dropdown-item" onClick={handleLogout}>Logout</button></li>
+                    </ul>
+                  </li>
+                </>
+              ) : (
+                <li className="nav-item">
+                  <button 
+                    className="btn btn-outline-light btn-sm"
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Loading...' : 'Sign in with Google'}
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -62,18 +120,38 @@ function App() {
             <div className="card text-center bg-primary text-white">
               <div className="card-body py-5">
                 <h1 className="display-4">Welcome to Match Mind</h1>
-                <p className="lead">A comprehensive React application with modern UI components</p>
-                <div className="btn-group">
-                  <button
-                    className="btn btn-light btn-lg"
-                    onClick={() => setShowModal(true)}
-                  >
-                    Get Started
-                  </button>
-                  <button className="btn btn-outline-light btn-lg">
-                    Learn More
-                  </button>
-                </div>
+                <p className="lead">
+                  {user 
+                    ? `Hello ${user.name}! Welcome to your internal application.`
+                    : 'A comprehensive React application with modern UI components'
+                  }
+                </p>
+                {user ? (
+                  <div className="btn-group">
+                    <button
+                      className="btn btn-light btn-lg"
+                      onClick={() => setShowModal(true)}
+                    >
+                      Get Started
+                    </button>
+                    <button className="btn btn-outline-light btn-lg">
+                      Learn More
+                    </button>
+                  </div>
+                ) : (
+                  <div className="btn-group">
+                    <button
+                      className="btn btn-light btn-lg"
+                      onClick={handleGoogleLogin}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Loading...' : 'Sign in with Google'}
+                    </button>
+                    <button className="btn btn-outline-light btn-lg">
+                      Learn More
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
