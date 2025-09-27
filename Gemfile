@@ -37,8 +37,8 @@ gem "jwt"
 # Serialization for API responses
 gem "active_model_serializers"
 
-# File uploads (for resumes)
-gem "carrierwave"
+# File uploads (for resumes) - using Active Storage instead of CarrierWave
+# gem "carrierwave"
 
 # Image processing
 gem "mini_magick"
@@ -73,7 +73,7 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 1.2"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
