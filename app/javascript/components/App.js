@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Spinner, Alert } from 'react-bootstrap';
+import { Container, Button, Spinner } from 'react-bootstrap';
 import Layout from './layout/Layout';
 import EngineersList from './pages/EngineersList';
+import ClientsList from './pages/ClientsList';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('engineers');
@@ -52,6 +53,8 @@ function App() {
         return <DashboardPlaceholder />;
       case 'engineers':
         return <EngineersList searchQuery={searchQuery} />;
+      case 'clients':
+        return <ClientsList searchQuery={searchQuery} />;
       case 'opportunities':
         return <OpportunitiesPlaceholder />;
       case 'matching':
@@ -99,7 +102,7 @@ function App() {
 
   // Authentication required
   if (!user) {
-    return (
+  return (
       <Container fluid className="d-flex justify-content-center align-items-center vh-100 bg-light">
         <div className="text-center p-5 bg-white rounded shadow-sm" style={{ maxWidth: '400px' }}>
           <div className="mb-4">
@@ -160,7 +163,7 @@ const DashboardPlaceholder = () => (
         <div className="stat-card">
           <h3>Available Engineers</h3>
           <div className="stat-number">15</div>
-        </div>
+                </div>
         <div className="stat-card">
           <h3>Rolling Off</h3>
           <div className="stat-number">8</div>
@@ -174,7 +177,7 @@ const DashboardPlaceholder = () => (
           <div className="stat-number">12</div>
         </div>
       </div>
-    </div>
+              </div>
     <style>{`
       .page-placeholder {
         display: flex;
@@ -222,7 +225,7 @@ const DashboardPlaceholder = () => (
         color: #1e293b;
       }
     `}</style>
-  </div>
+              </div>
 );
 
 const OpportunitiesPlaceholder = () => (
@@ -246,7 +249,7 @@ const OpportunitiesPlaceholder = () => (
         color: #374151;
       }
     `}</style>
-  </div>
+              </div>
 );
 
 const MatchingPlaceholder = () => (
@@ -270,7 +273,7 @@ const MatchingPlaceholder = () => (
         color: #374151;
       }
     `}</style>
-  </div>
+            </div>
 );
 
 const AnalyticsPlaceholder = () => (
@@ -294,7 +297,7 @@ const AnalyticsPlaceholder = () => (
         color: #374151;
       }
     `}</style>
-  </div>
+            </div>
 );
 
 const SettingsPlaceholder = () => (

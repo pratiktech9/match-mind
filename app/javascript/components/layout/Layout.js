@@ -24,6 +24,7 @@ const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
     const titles = {
       dashboard: 'Dashboard',
       engineers: 'Engineers',
+      clients: 'Clients',
       opportunities: 'Opportunities',
       matching: 'Matching',
       analytics: 'Analytics',
