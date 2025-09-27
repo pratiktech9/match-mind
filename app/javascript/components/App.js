@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Container, Button, Spinner, Alert } from 'react-bootstrap';
 import Layout from './layout/Layout';
 import EngineersList from './pages/EngineersList';
 
@@ -6,16 +7,22 @@ function App() {
   const [currentPage, setCurrentPage] = useState('engineers');
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock user data - in a real app, this would come from authentication
+  // Check authentication status on component mount
   useEffect(() => {
-    setUser({
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'Admin',
-      image_url: null
-    });
+    fetch('/api/current_user')
+      .then(response => response.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user);
+        }
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error checking auth status:', error);
+        setIsLoading(false);
+      });
   }, []);
 
   // Handle navigation between pages
@@ -58,11 +65,85 @@ function App() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = '/auth/google_oauth2';
+  };
+
+  const handleLogout = () => {
+    fetch('/logout', {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+      .then(() => {
+        setUser(null);
+        window.location.href = '/';
+      })
+      .catch(error => {
+        console.error('Logout error:', error);
+      });
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Container fluid className="d-flex justify-content-center align-items-center vh-100">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" className="mb-3" />
+          <p className="text-muted">Loading Match Mind...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  // Authentication required
+  if (!user) {
+    return (
+      <Container fluid className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div className="text-center p-5 bg-white rounded shadow-sm" style={{ maxWidth: '400px' }}>
+          <div className="mb-4">
+            <h1 className="h3 mb-3">Welcome to Match Mind</h1>
+            <p className="text-muted">
+              Connect engineers with opportunities using AI-powered matching
+            </p>
+          </div>
+
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            className="w-100"
+          >
+            {isLoading ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <span className="me-2">🚀</span>
+                Sign in with Google
+              </>
+            )}
+          </Button>
+
+          <p className="text-muted mt-3 small">
+            Secure authentication powered by Google OAuth
+          </p>
+        </div>
+      </Container>
+    );
+  }
+
+  // Main application
   return (
     <Layout
       currentPage={currentPage}
       user={user}
       onSearch={handleSearch}
+      onLogout={handleLogout}
     >
       {renderCurrentPage()}
     </Layout>
@@ -94,7 +175,7 @@ const DashboardPlaceholder = () => (
         </div>
       </div>
     </div>
-    <style jsx>{`
+    <style>{`
       .page-placeholder {
         display: flex;
         flex-direction: column;
@@ -104,13 +185,13 @@ const DashboardPlaceholder = () => (
         text-align: center;
         color: #6b7280;
       }
-      
+
       .placeholder-content h2 {
         font-size: 2rem;
         margin-bottom: 1rem;
         color: #374151;
       }
-      
+
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -119,7 +200,7 @@ const DashboardPlaceholder = () => (
         width: 100%;
         max-width: 800px;
       }
-      
+
       .stat-card {
         background: white;
         padding: 1.5rem;
@@ -127,14 +208,14 @@ const DashboardPlaceholder = () => (
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         text-align: center;
       }
-      
+
       .stat-card h3 {
         font-size: 0.875rem;
         font-weight: 500;
         color: #6b7280;
         margin-bottom: 0.5rem;
       }
-      
+
       .stat-number {
         font-size: 2.25rem;
         font-weight: 700;
@@ -148,7 +229,7 @@ const OpportunitiesPlaceholder = () => (
   <div className="page-placeholder">
     <h2>💼 Opportunities</h2>
     <p>Opportunities page coming soon...</p>
-    <style jsx>{`
+    <style>{`
       .page-placeholder {
         display: flex;
         flex-direction: column;
@@ -158,7 +239,7 @@ const OpportunitiesPlaceholder = () => (
         text-align: center;
         color: #6b7280;
       }
-      
+
       .page-placeholder h2 {
         font-size: 2rem;
         margin-bottom: 1rem;
@@ -172,7 +253,7 @@ const MatchingPlaceholder = () => (
   <div className="page-placeholder">
     <h2>⚡ Matching</h2>
     <p>AI-powered matching system coming soon...</p>
-    <style jsx>{`
+    <style>{`
       .page-placeholder {
         display: flex;
         flex-direction: column;
@@ -182,7 +263,7 @@ const MatchingPlaceholder = () => (
         text-align: center;
         color: #6b7280;
       }
-      
+
       .page-placeholder h2 {
         font-size: 2rem;
         margin-bottom: 1rem;
@@ -196,7 +277,7 @@ const AnalyticsPlaceholder = () => (
   <div className="page-placeholder">
     <h2>📊 Analytics</h2>
     <p>Analytics dashboard coming soon...</p>
-    <style jsx>{`
+    <style>{`
       .page-placeholder {
         display: flex;
         flex-direction: column;
@@ -206,7 +287,7 @@ const AnalyticsPlaceholder = () => (
         text-align: center;
         color: #6b7280;
       }
-      
+
       .page-placeholder h2 {
         font-size: 2rem;
         margin-bottom: 1rem;
@@ -220,7 +301,7 @@ const SettingsPlaceholder = () => (
   <div className="page-placeholder">
     <h2>⚙️ Settings</h2>
     <p>Settings page coming soon...</p>
-    <style jsx>{`
+    <style>{`
       .page-placeholder {
         display: flex;
         flex-direction: column;
@@ -230,7 +311,7 @@ const SettingsPlaceholder = () => (
         text-align: center;
         color: #6b7280;
       }
-      
+
       .page-placeholder h2 {
         font-size: 2rem;
         margin-bottom: 1rem;

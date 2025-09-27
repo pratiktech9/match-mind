@@ -18,11 +18,11 @@ class ApiService {
   getHeaders(additionalHeaders = {}) {
     const csrfToken = this.getCSRFToken();
     const headers = { ...this.defaultHeaders, ...additionalHeaders };
-    
+
     if (csrfToken) {
       headers['X-CSRF-Token'] = csrfToken;
     }
-    
+
     return headers;
   }
 
@@ -36,7 +36,7 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);

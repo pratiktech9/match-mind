@@ -2,8 +2,8 @@ class Skill < ApplicationRecord
   # Associations
   has_many :engineer_skills, dependent: :destroy
   has_many :engineers, through: :engineer_skills
-  has_many :client_skills, dependent: :destroy
-  has_many :clients, through: :client_skills
+  has_many :client_opportunity_skills, dependent: :destroy
+  has_many :client_opportunities, through: :client_opportunity_skills
 
   # Validations
   validates :name, presence: true, uniqueness: true
@@ -11,6 +11,7 @@ class Skill < ApplicationRecord
   # Scopes
   scope :by_category, ->(category) { where("name ILIKE ?", "%#{category}%") }
   scope :popular, -> { joins(:engineer_skills).group("skills.id").order("COUNT(engineer_skills.id) DESC") }
+  scope :in_demand, -> { joins(:client_opportunity_skills).group("skills.id").order("COUNT(client_opportunity_skills.id) DESC") }
 
   # Class methods
   def self.search(query)
@@ -42,12 +43,22 @@ class Skill < ApplicationRecord
     engineers.count
   end
 
-  def client_count
-    clients.count
+  def opportunity_count
+    client_opportunities.count
   end
 
   def demand_score
-    client_count * 2 + engineer_count
+    opportunity_count * 2 + engineer_count
+  end
+
+  def required_opportunities
+    client_opportunities.joins(:client_opportunity_skills)
+                       .where(client_opportunity_skills: { required: true })
+  end
+
+  def optional_opportunities
+    client_opportunities.joins(:client_opportunity_skills)
+                       .where(client_opportunity_skills: { required: false })
   end
 
   def is_tech_stack?

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  Nav, 
-  Button, 
+import {
+  Nav,
+  Button,
   ListGroup,
-  Badge 
+  Badge
 } from 'react-bootstrap';
 
 const Navbar = ({ onNavigate, currentPage, onToggle }) => {
@@ -46,7 +46,7 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
             {!isCollapsed && <span className="logo-text">Matching System</span>}
             {isCollapsed && <span className="logo-icon">💼</span>}
           </div>
-          <Button 
+          <Button
             variant="link"
             className="collapse-toggle p-0"
             onClick={toggleCollapsed}
@@ -82,8 +82,8 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
                 </div>
                 <ListGroup variant="flush" className="nav-subsection">
                   {savedSearches.map((search) => (
-                    <ListGroup.Item 
-                      key={search.id} 
+                    <ListGroup.Item
+                      key={search.id}
                       action
                       className="nav-subitem"
                     >
@@ -102,8 +102,8 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
                 </div>
                 <ListGroup variant="flush" className="nav-subsection">
                   {favoriteMatches.map((match) => (
-                    <ListGroup.Item 
-                      key={match.id} 
+                    <ListGroup.Item
+                      key={match.id}
                       action
                       className="nav-subitem"
                     >

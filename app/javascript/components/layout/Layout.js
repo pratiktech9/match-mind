@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap';
 import Navbar from './Navbar';
 import Header from './Header';
 
-const Layout = ({ children, currentPage, title, user, onSearch }) => {
+const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
   const [currentPageState, setCurrentPageState] = useState(currentPage || 'dashboard');
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
 
@@ -24,7 +24,7 @@ const Layout = ({ children, currentPage, title, user, onSearch }) => {
     const titles = {
       dashboard: 'Dashboard',
       engineers: 'Engineers',
-      opportunities: 'Opportunities', 
+      opportunities: 'Opportunities',
       matching: 'Matching',
       analytics: 'Analytics',
       settings: 'Settings'
@@ -34,24 +34,25 @@ const Layout = ({ children, currentPage, title, user, onSearch }) => {
 
   return (
     <div className={`layout d-flex ${isNavbarCollapsed ? 'sidebar-collapsed' : ''}`} style={{ height: '100vh', overflow: 'hidden' }}>
-      <Navbar 
-        onNavigate={handleNavigate} 
+      <Navbar
+        onNavigate={handleNavigate}
         currentPage={currentPageState}
         onToggle={handleNavbarToggle}
       />
-      
-      <div className="layout-main flex-fill d-flex flex-column" 
-           style={{ 
-             marginLeft: isNavbarCollapsed ? '70px' : '280px', 
-             transition: 'margin-left 0.3s ease', 
-             minWidth: 0 
+
+      <div className="layout-main flex-fill d-flex flex-column"
+           style={{
+             marginLeft: isNavbarCollapsed ? '70px' : '280px',
+             transition: 'margin-left 0.3s ease',
+             minWidth: 0
            }}>
-        <Header 
+        <Header
           title={getPageTitle(currentPageState)}
           user={user}
           onSearch={onSearch}
+          onLogout={onLogout}
         />
-        
+
         <main className="layout-content flex-fill overflow-auto bg-light">
           <Container fluid className="p-4" style={{ minHeight: '100%' }}>
             {children}

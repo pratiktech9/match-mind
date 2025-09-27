@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, Row, Col, Card, Form, Button, Badge, 
-  Table, Pagination, Spinner, Alert 
+import {
+  Container, Row, Col, Card, Form, Button, Badge,
+  Table, Pagination, Spinner, Alert
 } from 'react-bootstrap';
 
 const EngineersList = ({ searchQuery = '' }) => {
@@ -29,7 +29,7 @@ const EngineersList = ({ searchQuery = '' }) => {
   const fetchEngineers = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const queryParams = new URLSearchParams({
         page: currentPage,
@@ -41,11 +41,11 @@ const EngineersList = ({ searchQuery = '' }) => {
       });
 
       const response = await fetch(`/api/v1/engineers?${queryParams}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setEngineers(data.engineers || []);
       setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
@@ -218,30 +218,30 @@ const EngineersList = ({ searchQuery = '' }) => {
                 <Table hover className="mb-0">
                   <thead className="table-light">
                     <tr>
-                      <th 
-                        style={{ cursor: 'pointer' }} 
+                      <th
+                        style={{ cursor: 'pointer' }}
                         onClick={() => handleSort('name')}
                         className="border-0"
                       >
                         Engineer {getSortIcon('name')}
                       </th>
-                      <th 
-                        style={{ cursor: 'pointer' }} 
+                      <th
+                        style={{ cursor: 'pointer' }}
                         onClick={() => handleSort('status')}
                         className="border-0"
                       >
                         Status {getSortIcon('status')}
                       </th>
                       <th className="border-0">Skills</th>
-                      <th 
-                        style={{ cursor: 'pointer' }} 
+                      <th
+                        style={{ cursor: 'pointer' }}
                         onClick={() => handleSort('experience_years')}
                         className="border-0"
                       >
                         Experience {getSortIcon('experience_years')}
                       </th>
-                      <th 
-                        style={{ cursor: 'pointer' }} 
+                      <th
+                        style={{ cursor: 'pointer' }}
                         onClick={() => handleSort('availability_date')}
                         className="border-0"
                       >
@@ -258,15 +258,15 @@ const EngineersList = ({ searchQuery = '' }) => {
                             <div className="d-flex align-items-center">
                               <div className="avatar-circle me-3">
                                 {engineer.image_url ? (
-                                  <img 
-                                    src={engineer.image_url} 
+                                  <img
+                                    src={engineer.image_url}
                                     alt={engineer.name}
                                     className="rounded-circle"
                                     width="40"
                                     height="40"
                                   />
                                 ) : (
-                                  <div 
+                                  <div
                                     className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
                                     style={{ width: '40px', height: '40px', fontSize: '16px' }}
                                   >
@@ -281,7 +281,7 @@ const EngineersList = ({ searchQuery = '' }) => {
                             </div>
                           </td>
                           <td className="py-3">
-                            <Badge 
+                            <Badge
                               bg={getStatusBadgeVariant(engineer.status)}
                               className="px-2 py-1"
                             >
@@ -293,9 +293,9 @@ const EngineersList = ({ searchQuery = '' }) => {
                               {engineer.skills && engineer.skills.length > 0 ? (
                                 <div className="d-flex flex-wrap gap-1">
                                   {engineer.skills.slice(0, 3).map((skill, index) => (
-                                    <Badge 
+                                    <Badge
                                       key={index}
-                                      bg="light" 
+                                      bg="light"
                                       text="dark"
                                       className="px-2 py-1 small border"
                                     >
@@ -303,8 +303,8 @@ const EngineersList = ({ searchQuery = '' }) => {
                                     </Badge>
                                   ))}
                                   {engineer.skills.length > 3 && (
-                                    <Badge 
-                                      bg="secondary" 
+                                    <Badge
+                                      bg="secondary"
                                       className="px-2 py-1 small"
                                     >
                                       +{engineer.skills.length - 3} more
@@ -366,19 +366,19 @@ const EngineersList = ({ searchQuery = '' }) => {
                     </Col>
                     <Col xs="auto">
                       <Pagination size="sm" className="mb-0">
-                        <Pagination.First 
+                        <Pagination.First
                           onClick={() => setCurrentPage(1)}
                           disabled={currentPage === 1}
                         />
-                        <Pagination.Prev 
+                        <Pagination.Prev
                           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                           disabled={currentPage === 1}
                         />
-                        
+
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                           const pageNumber = Math.max(1, currentPage - 2) + i;
                           if (pageNumber > totalPages) return null;
-                          
+
                           return (
                             <Pagination.Item
                               key={pageNumber}
@@ -389,12 +389,12 @@ const EngineersList = ({ searchQuery = '' }) => {
                             </Pagination.Item>
                           );
                         })}
-                        
-                        <Pagination.Next 
+
+                        <Pagination.Next
                           onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                           disabled={currentPage === totalPages}
                         />
-                        <Pagination.Last 
+                        <Pagination.Last
                           onClick={() => setCurrentPage(totalPages)}
                           disabled={currentPage === totalPages}
                         />

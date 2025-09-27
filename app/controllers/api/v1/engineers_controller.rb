@@ -4,7 +4,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
   # GET /api/v1/engineers
   def index
     @engineers = Engineer.includes(:skills, :engineer_skills)
-    
+
     # Apply search filter
     if params[:search].present?
       @engineers = @engineers.search(params[:search])

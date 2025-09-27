@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  Navbar, 
-  Nav, 
-  Form, 
-  Button, 
-  Badge, 
+import {
+  Navbar,
+  Nav,
+  Form,
+  Button,
+  Badge,
   Dropdown
 } from 'react-bootstrap';
 
-const Header = ({ title, user, onSearch, onNotificationClick }) => {
+const Header = ({ title, user, onSearch, onNotificationClick, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchSubmit = (e) => {
@@ -47,8 +47,8 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
                 className="pe-5"
                 style={{ width: '250px' }}
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 variant="link"
                 className="position-absolute end-0 top-50 translate-middle-y border-0 p-2"
                 style={{ zIndex: 10 }}
@@ -59,8 +59,8 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
           </Form>
 
           {/* Mobile Search Button */}
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             className="me-3 d-md-none p-2 text-decoration-none"
           >
             🔍
@@ -68,15 +68,15 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
 
           {/* Notifications Dropdown */}
           <Dropdown className="me-3" align="end">
-            <Dropdown.Toggle 
-              variant="link" 
+            <Dropdown.Toggle
+              variant="link"
               className="position-relative p-2 border-0 text-decoration-none"
               id="notifications-dropdown"
             >
               🔔
               {unreadCount > 0 && (
-                <Badge 
-                  bg="danger" 
+                <Badge
+                  bg="danger"
                   className="position-absolute top-0 end-0 rounded-pill"
                   style={{ fontSize: '0.75rem' }}
                 >
@@ -92,7 +92,7 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
                   Mark all read
                 </Button>
               </Dropdown.Header>
-              
+
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {notifications.map((notification) => (
                   <Dropdown.Item
@@ -115,7 +115,7 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
                   </Dropdown.Item>
                 ))}
               </div>
-              
+
               <Dropdown.Divider />
               <div className="text-center p-2">
                 <Button variant="link" size="sm" className="text-primary">
@@ -127,18 +127,18 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
 
           {/* User Menu Dropdown */}
           <Dropdown align="end">
-            <Dropdown.Toggle 
-              variant="link" 
+            <Dropdown.Toggle
+              variant="link"
               className="d-flex align-items-center text-decoration-none border-0 p-2"
               id="user-dropdown"
             >
               <div className="d-flex align-items-center">
-                <div className="me-2 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                <div className="me-2 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
                      style={{ width: '32px', height: '32px' }}>
                   {user?.image_url ? (
-                    <img 
-                      src={user.image_url} 
-                      alt={user.name} 
+                    <img
+                      src={user.image_url}
+                      alt={user.name}
                       className="w-100 h-100 rounded-circle"
                       style={{ objectFit: 'cover' }}
                     />
@@ -162,12 +162,12 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
 
             <Dropdown.Menu style={{ width: '280px', minWidth: '250px' }}>
               <div className="d-flex align-items-center p-3 border-bottom">
-                <div className="me-3 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                <div className="me-3 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
                      style={{ width: '48px', height: '48px' }}>
                   {user?.image_url ? (
-                    <img 
-                      src={user.image_url} 
-                      alt={user.name} 
+                    <img
+                      src={user.image_url}
+                      alt={user.name}
                       className="w-100 h-100 rounded-circle"
                       style={{ objectFit: 'cover' }}
                     />
@@ -186,7 +186,7 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
                   </div>
                 </div>
               </div>
-              
+
               <Dropdown.Item className="d-flex align-items-center py-2">
                 <span className="me-3">👤</span>
                 Profile Settings
@@ -196,7 +196,10 @@ const Header = ({ title, user, onSearch, onNotificationClick }) => {
                 Preferences
               </Dropdown.Item>
               <Dropdown.Divider />
-              <Dropdown.Item className="d-flex align-items-center py-2 text-danger">
+              <Dropdown.Item
+                className="d-flex align-items-center py-2 text-danger"
+                onClick={onLogout}
+              >
                 <span className="me-3">🚪</span>
                 Sign Out
               </Dropdown.Item>
