@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+# Function to build and copy files
+build_and_copy() {
+  echo "Building and copying files..."
+  yarn build
+  mkdir -p public/assets
+  cp app/assets/builds/application.js public/assets/application.js 2>/dev/null || true
+  cp app/assets/builds/application.js.map public/assets/application.js.map 2>/dev/null || true
+  echo "Build complete!"
+}
+
+# Initial build
+build_and_copy
+
+# Watch for changes and rebuild
+yarn run esbuild app/javascript/application.js --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --loader:.js=jsx --watch=forever &
+BUILD_PID=$!
+
+# Watch for file changes and copy
+while true; do
+  if [ -f app/assets/builds/application.js ]; then
+    cp app/assets/builds/application.js public/assets/application.js 2>/dev/null || true
+    cp app/assets/builds/application.js.map public/assets/application.js.map 2>/dev/null || true
+  fi
+  sleep 1
+done
+
+# Cleanup on exit
+trap "kill $BUILD_PID" EXIT

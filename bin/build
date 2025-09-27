@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# Build the JavaScript
+yarn build
+
+# Copy built files to public directory for Propshaft to serve
+mkdir -p public/assets
+cp app/assets/builds/application.js public/assets/application.js
+cp app/assets/builds/application.js.map public/assets/application.js.map
+
+echo "Build complete! Files copied to public/assets/"

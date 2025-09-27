@@ -14,5 +14,5 @@ Rails.application.routes.draw do
   delete "/logout", to: "sessions#destroy", as: :logout
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "home#index"
 end
