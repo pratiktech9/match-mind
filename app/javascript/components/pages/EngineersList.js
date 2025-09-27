@@ -47,8 +47,8 @@ const EngineersList = ({ searchQuery = '' }) => {
       }
 
       const data = await response.json();
-      setEngineers(data.engineers || []);
-      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+      setEngineers(data.data || []);
+      setTotalPages(data.meta?.total_pages || 1);
     } catch (err) {
       console.error('Error fetching engineers:', err);
       setError('Failed to load engineers. Please try again.');
