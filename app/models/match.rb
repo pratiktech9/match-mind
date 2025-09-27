@@ -2,17 +2,21 @@ class Match < ApplicationRecord
   # Associations
   belongs_to :engineer
   belongs_to :client
+  belongs_to :client_opportunity, optional: true
 
   # Validations
   validates :score, presence: true, numericality: { in: 0.0..100.0 }
-  validates :engineer_id, uniqueness: { scope: :client_id }
+  validates :status, presence: true, inclusion: { in: %w[pending contacted interested rejected hired archived] }
 
   # Scopes
   scope :high_score, ->(min_score = 80) { where("score >= ?", min_score) }
   scope :by_engineer, ->(engineer) { where(engineer: engineer) }
   scope :by_client, ->(client) { where(client: client) }
-  scope :recent, -> { order(created_at: :desc) }
+  scope :by_opportunity, ->(opportunity) { where(client_opportunity: opportunity) }
+  scope :by_status, ->(status) { where(status: status) }
+  scope :recent, -> { order(matched_at: :desc, created_at: :desc) }
   scope :top_matches, ->(limit = 10) { order(score: :desc).limit(limit) }
+  scope :active, -> { where.not(status: %w[rejected archived]) }
 
   # Class methods
   def self.best_matches_for_engineer(engineer, limit = 5)

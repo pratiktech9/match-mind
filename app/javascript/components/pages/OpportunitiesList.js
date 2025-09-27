@@ -4,7 +4,7 @@ import {
   Table, Pagination, Spinner, Alert, Modal
 } from 'react-bootstrap';
 
-const OpportunitiesList = ({ searchQuery = '' }) => {
+const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }) => {
   const [opportunities, setOpportunities] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
-  
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -82,6 +82,13 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
     fetchClients();
   }, []);
 
+  // Set client filter when provided via navigation
+  useEffect(() => {
+    if (clientFilter) {
+      setFilters(prev => ({ ...prev, client_id: clientFilter }));
+    }
+  }, [clientFilter]);
+
   const fetchClients = async () => {
     try {
       const response = await fetch('/api/v1/clients');
@@ -106,6 +113,12 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
       setSortOrder('asc');
     }
     setCurrentPage(1);
+  };
+
+  const handleViewOpportunity = (opportunityId) => {
+    if (onNavigate) {
+      onNavigate('opportunity-detail', { opportunityId });
+    }
   };
 
   const getStatusBadgeVariant = (status) => {
@@ -199,15 +212,15 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
       }
 
       const data = await response.json();
-      
+
       // Add the new opportunity to the list
       setOpportunities(prev => [data.data, ...prev]);
-      
+
       // Close modal and reset form
       handleCloseModal();
-      
+
       alert('Opportunity created successfully!');
-      
+
     } catch (err) {
       console.error('Error creating opportunity:', err);
       alert(`Error: ${err.message}`);
@@ -250,17 +263,17 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
       }
 
       const data = await response.json();
-      
+
       // Update the opportunity in the list
-      setOpportunities(prev => prev.map(opportunity => 
+      setOpportunities(prev => prev.map(opportunity =>
         opportunity.id === editingOpportunity.id ? data.data : opportunity
       ));
-      
+
       // Close modal and reset form
       handleCloseEditModal();
-      
+
       alert('Opportunity updated successfully!');
-      
+
     } catch (err) {
       console.error('Error updating opportunity:', err);
       alert(`Error: ${err.message}`);
@@ -476,18 +489,19 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
                           </td>
                           <td className="py-3">
                             <div className="d-flex gap-2">
-                              <Button variant="outline-primary" size="sm">
+                              <Button 
+                                variant="outline-primary" 
+                                size="sm"
+                                onClick={() => handleViewOpportunity(opportunity.id)}
+                              >
                                 View
                               </Button>
-                              <Button 
-                                variant="outline-warning" 
+                              <Button
+                                variant="outline-warning"
                                 size="sm"
                                 onClick={() => handleEditOpportunity(opportunity)}
                               >
                                 Edit
-                              </Button>
-                              <Button variant="outline-secondary" size="sm">
-                                Match
                               </Button>
                             </div>
                           </td>
@@ -599,7 +613,7 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
                 </Form.Group>
               </Col>
             </Row>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
@@ -731,8 +745,8 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
           <Button variant="secondary" onClick={handleCloseModal} disabled={submitting}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSubmitOpportunity}
             disabled={submitting || !newOpportunity.client_id || !newOpportunity.title}
           >
@@ -786,7 +800,7 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
                 </Form.Group>
               </Col>
             </Row>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
@@ -918,8 +932,8 @@ const OpportunitiesList = ({ searchQuery = '' }) => {
           <Button variant="secondary" onClick={handleCloseEditModal} disabled={submitting}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleUpdateOpportunity}
             disabled={submitting || !editingOpportunity?.client_id || !editingOpportunity?.title}
           >

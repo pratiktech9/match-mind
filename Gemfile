@@ -52,6 +52,9 @@ gem "ransack"
 # Background jobs for AI processing
 gem "sidekiq"
 
+# Sidekiq cron for scheduled jobs
+gem "sidekiq-cron"
+
 # Redis for caching and background jobs
 gem "redis"
 

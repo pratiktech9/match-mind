@@ -1,0 +1,13 @@
+# Daily matching job - runs every day at 2 AM
+daily_matching:
+  cron: '0 2 * * *'
+  class: 'MatchingJob'
+  description: 'Daily AI matching process for all active opportunities'
+  args: []
+
+# Weekly cleanup job - runs every Sunday at 3 AM  
+weekly_cleanup:
+  cron: '0 3 * * 0'
+  class: 'MatchingCleanupJob'
+  description: 'Weekly cleanup of old and archived matches'
+  args: []

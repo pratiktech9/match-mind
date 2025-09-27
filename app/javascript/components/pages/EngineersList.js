@@ -4,7 +4,7 @@ import {
   Table, Pagination, Spinner, Alert
 } from 'react-bootstrap';
 
-const EngineersList = ({ searchQuery = '' }) => {
+const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [engineers, setEngineers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,6 +70,12 @@ const EngineersList = ({ searchQuery = '' }) => {
       setSortOrder('asc');
     }
     setCurrentPage(1);
+  };
+
+  const handleViewEngineer = (engineerId) => {
+    if (onNavigate) {
+      onNavigate('engineer-detail', { engineerId });
+    }
   };
 
   const getStatusBadgeVariant = (status) => {
@@ -330,11 +336,12 @@ const EngineersList = ({ searchQuery = '' }) => {
                           </td>
                           <td className="py-3">
                             <div className="d-flex gap-2">
-                              <Button variant="outline-primary" size="sm">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleViewEngineer(engineer.id)}
+                              >
                                 View
-                              </Button>
-                              <Button variant="outline-secondary" size="sm">
-                                Match
                               </Button>
                             </div>
                           </td>

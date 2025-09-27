@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_27_113024) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_27_181924) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,7 +91,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_27_113024) do
     t.text "explanation"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "client_opportunity_id"
+    t.string "status", default: "pending"
+    t.datetime "matched_at"
     t.index ["client_id"], name: "index_matches_on_client_id"
+    t.index ["client_opportunity_id"], name: "index_matches_on_client_opportunity_id"
     t.index ["engineer_id"], name: "index_matches_on_engineer_id"
   end
 
@@ -122,6 +126,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_27_113024) do
   add_foreign_key "client_opportunity_skills", "skills"
   add_foreign_key "engineer_skills", "engineers"
   add_foreign_key "engineer_skills", "skills"
+  add_foreign_key "matches", "client_opportunities"
   add_foreign_key "matches", "clients"
   add_foreign_key "matches", "engineers"
 end

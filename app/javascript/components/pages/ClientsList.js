@@ -4,7 +4,7 @@ import {
   Table, Pagination, Spinner, Alert, Modal
 } from 'react-bootstrap';
 
-const ClientsList = ({ searchQuery = '' }) => {
+const ClientsList = ({ searchQuery = '', onNavigate }) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +17,7 @@ const ClientsList = ({ searchQuery = '' }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -114,6 +114,12 @@ const ClientsList = ({ searchQuery = '' }) => {
     setEditingClient(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleViewOpportunities = (clientId) => {
+    if (onNavigate) {
+      onNavigate('opportunities', { clientId });
+    }
+  };
+
   const handleEditClient = (client) => {
     setEditingClient({ ...client });
     setShowEditModal(true);
@@ -141,16 +147,16 @@ const ClientsList = ({ searchQuery = '' }) => {
       }
 
       const data = await response.json();
-      
+
       // Add the new client to the list
       setClients(prev => [data.data, ...prev]);
-      
+
       // Close modal and reset form
       handleCloseModal();
-      
+
       // Show success message (you could add a toast notification here)
       alert('Client created successfully!');
-      
+
     } catch (err) {
       console.error('Error creating client:', err);
       alert(`Error: ${err.message}`);
@@ -184,18 +190,18 @@ const ClientsList = ({ searchQuery = '' }) => {
       }
 
       const data = await response.json();
-      
+
       // Update the client in the list
-      setClients(prev => prev.map(client => 
+      setClients(prev => prev.map(client =>
         client.id === editingClient.id ? data.data : client
       ));
-      
+
       // Close modal and reset form
       handleCloseEditModal();
-      
+
       // Show success message
       alert('Client updated successfully!');
-      
+
     } catch (err) {
       console.error('Error updating client:', err);
       alert(`Error: ${err.message}`);
@@ -394,17 +400,18 @@ const ClientsList = ({ searchQuery = '' }) => {
                           </td>
                           <td className="py-3">
                             <div className="d-flex gap-2">
-                              <Button variant="outline-primary" size="sm">
-                                View
-                              </Button>
-                              <Button 
-                                variant="outline-warning" 
+                              <Button
+                                variant="outline-warning"
                                 size="sm"
                                 onClick={() => handleEditClient(client)}
                               >
                                 Edit
                               </Button>
-                              <Button variant="outline-secondary" size="sm">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleViewOpportunities(client.id)}
+                              >
                                 Opportunities
                               </Button>
                             </div>
@@ -497,7 +504,7 @@ const ClientsList = ({ searchQuery = '' }) => {
                 required
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Industry *</Form.Label>
               <Form.Select
@@ -525,8 +532,8 @@ const ClientsList = ({ searchQuery = '' }) => {
           <Button variant="secondary" onClick={handleCloseModal} disabled={submitting}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSubmitClient}
             disabled={submitting || !newClient.name.trim() || !newClient.industry}
           >
@@ -560,7 +567,7 @@ const ClientsList = ({ searchQuery = '' }) => {
                 required
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Industry *</Form.Label>
               <Form.Select
@@ -588,8 +595,8 @@ const ClientsList = ({ searchQuery = '' }) => {
           <Button variant="secondary" onClick={handleCloseEditModal} disabled={submitting}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleUpdateClient}
             disabled={submitting || !editingClient?.name?.trim() || !editingClient?.industry}
           >

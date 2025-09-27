@@ -4,9 +4,16 @@ import Layout from './layout/Layout';
 import EngineersList from './pages/EngineersList';
 import ClientsList from './pages/ClientsList';
 import OpportunitiesList from './pages/OpportunitiesList';
+import OpportunityDetail from './pages/OpportunityDetail';
+import MatchingPage from './pages/MatchingPage';
+
+const EngineerDetail = React.lazy(() => import('./pages/EngineerDetail'));
 
 function App() {
   const [currentPage, setCurrentPage] = useState('engineers');
+  const [opportunityId, setOpportunityId] = useState(null);
+  const [clientFilter, setClientFilter] = useState(null);
+  const [engineerId, setEngineerId] = useState(null);
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -28,11 +35,24 @@ function App() {
   }, []);
 
   // Handle navigation between pages
-  const handleNavigate = (pageId) => {
+  const handleNavigate = (pageId, params = {}) => {
     setCurrentPage(pageId);
-  };
-
-  // Handle global search
+    if (params.opportunityId) {
+      setOpportunityId(params.opportunityId);
+    } else {
+      setOpportunityId(null);
+    }
+    if (params.clientId) {
+      setClientFilter(params.clientId);
+    } else {
+      setClientFilter(null);
+    }
+    if (params.engineerId) {
+      setEngineerId(params.engineerId);
+    } else {
+      setEngineerId(null);
+    }
+  };  // Handle global search
   const handleSearch = (query) => {
     setSearchQuery(query);
     console.log('Global search:', query);
@@ -53,19 +73,23 @@ function App() {
       case 'dashboard':
         return <DashboardPlaceholder />;
       case 'engineers':
-        return <EngineersList searchQuery={searchQuery} />;
+        return <EngineersList searchQuery={searchQuery} onNavigate={handleNavigate} />;
+      case 'engineer-detail':
+        return <EngineerDetail engineerId={engineerId} onNavigate={handleNavigate} />;
       case 'clients':
-        return <ClientsList searchQuery={searchQuery} />;
+        return <ClientsList searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'opportunities':
-        return <OpportunitiesList searchQuery={searchQuery} />;
+        return <OpportunitiesList searchQuery={searchQuery} onNavigate={handleNavigate} clientFilter={clientFilter} />;
+      case 'opportunity-detail':
+        return <OpportunityDetail opportunityId={opportunityId} onNavigate={handleNavigate} />;
       case 'matching':
-        return <MatchingPlaceholder />;
+        return <MatchingPage searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'analytics':
         return <AnalyticsPlaceholder />;
       case 'settings':
         return <SettingsPlaceholder />;
       default:
-        return <EngineersList searchQuery={searchQuery} />;
+        return <EngineersList searchQuery={searchQuery} onNavigate={handleNavigate} />;
     }
   };
 

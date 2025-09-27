@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
+  # Sidekiq Web UI (for monitoring background jobs)
+  require 'sidekiq/web'
+  mount Sidekiq::Web => '/sidekiq'
+
   # API routes
   namespace :api do
     namespace :v1 do
@@ -33,6 +37,11 @@ Rails.application.routes.draw do
     get "opportunities/:opportunity_id/matches", to: "matching#find_matches_for_opportunity"
     get "engineers/:engineer_id/matches", to: "matching#find_matches_for_engineer"
     post "matches", to: "matching#create_match"
+    
+    # Matching management routes
+    get "matches", to: "matching#index"
+    post "matching/trigger", to: "matching#trigger_matching"
+    patch "matches/:id/status", to: "matching#update_match_status"
   end
 
   # Defines the root path route ("/")
