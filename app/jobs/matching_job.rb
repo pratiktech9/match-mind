@@ -7,10 +7,10 @@ class MatchingJob < ApplicationJob
     opportunities = if opportunity_id.present?
                      # Process specific opportunity
                      ClientOpportunity.where(id: opportunity_id)
-                   else
+    else
                      # Process all active opportunities
                      ClientOpportunity.active
-                   end
+    end
 
     opportunities.find_each do |opportunity|
       process_opportunity_matches(opportunity)
@@ -45,7 +45,7 @@ class MatchingJob < ApplicationJob
         match.assign_attributes(
           score: score,
           explanation: explanation,
-          status: 'pending',
+          status: "pending",
           matched_at: Time.current
         )
 

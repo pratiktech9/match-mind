@@ -2,8 +2,8 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Sidekiq Web UI (for monitoring background jobs)
-  require 'sidekiq/web'
-  mount Sidekiq::Web => '/sidekiq'
+  require "sidekiq/web"
+  mount Sidekiq::Web => "/sidekiq"
 
   # API routes
   namespace :api do

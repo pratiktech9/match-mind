@@ -66,7 +66,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     @engineer = Engineer.new(engineer_params)
 
     if @engineer.save
-    #   add_skills_to_engineer(@engineer, skill_ids) if skill_ids.present?
+      #   add_skills_to_engineer(@engineer, skill_ids) if skill_ids.present?
       render_success(engineer_json(@engineer), "Engineer created successfully", :created)
     else
       render_error(@engineer.errors.full_messages.join(", "))
@@ -76,7 +76,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
   # PATCH/PUT /api/v1/engineers/:id
   def update
     if @engineer.update(engineer_params)
-    #   update_engineer_skills(@engineer, skill_ids)
+      #   update_engineer_skills(@engineer, skill_ids)
       render_success(engineer_json(@engineer), "Engineer updated successfully")
     else
       render_error(@engineer.errors.full_messages.join(", "))
