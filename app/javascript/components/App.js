@@ -6,10 +6,12 @@ import ClientsList from './pages/ClientsList';
 import OpportunitiesList from './pages/OpportunitiesList';
 import OpportunityDetail from './pages/OpportunityDetail';
 import MatchingPage from './pages/MatchingPage';
+import NotificationsList from './pages/NotificationsList';
 
 const EngineerDetail = React.lazy(() => import('./pages/EngineerDetail'));
 
 function App() {
+  console.log('App component rendered');
   const [currentPage, setCurrentPage] = useState('engineers');
   const [opportunityId, setOpportunityId] = useState(null);
   const [clientFilter, setClientFilter] = useState(null);
@@ -84,6 +86,8 @@ function App() {
         return <OpportunityDetail opportunityId={opportunityId} onNavigate={handleNavigate} />;
       case 'matching':
         return <MatchingPage searchQuery={searchQuery} onNavigate={handleNavigate} />;
+      case 'notifications':
+        return <NotificationsList searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'analytics':
         return <AnalyticsPlaceholder />;
       case 'settings':
@@ -254,29 +258,6 @@ const DashboardPlaceholder = () => (
 );
 
 
-const MatchingPlaceholder = () => (
-  <div className="page-placeholder">
-    <h2>⚡ Matching</h2>
-    <p>AI-powered matching system coming soon...</p>
-    <style>{`
-      .page-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        text-align: center;
-        color: #6b7280;
-      }
-
-      .page-placeholder h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #374151;
-      }
-    `}</style>
-            </div>
-);
 
 const AnalyticsPlaceholder = () => (
   <div className="page-placeholder">

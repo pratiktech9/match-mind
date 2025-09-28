@@ -116,31 +116,10 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     }
   };
 
-  const getStatusBadgeVariant = (status) => {
-    const variants = {
-      available: 'success',
-      rolling_off: 'warning',
-      on_bench: 'info',
-      allocated: 'secondary'
-    };
-    return variants[status] || 'secondary';
-  };
-
-  const formatStatus = (status) => {
-    return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
-
-  const getSortIcon = (field) => {
-    if (sortBy !== field) return '↕️';
-    return sortOrder === 'asc' ? '↑' : '↓';
-  };
-
   // Modal handlers
-  const handleAddEngineer = () => {
-    setModalError(null);
+  const handleShowAddModal = () => {
     setShowAddModal(true);
   };
-
   const handleCloseModal = () => {
     setShowAddModal(false);
     setNewEngineer({
@@ -165,8 +144,6 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditingEngineer(null);
-    setSubmitting(false);
-    setModalError(null);
   };
 
   const handleInputChange = (e) => {
@@ -179,28 +156,6 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     setEditingEngineer(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEditEngineer = (engineer) => {
-    setModalError(null);
-    setEditingEngineer({
-      ...engineer,
-      skill_ids: engineer.skills?.map(skill => skill.id) || []
-    });
-    setShowEditModal(true);
-  };
-
-  const handleSkillChange = (e, isEdit = false) => {
-    const { options } = e.target;
-    const selectedIds = Array.from(options)
-      .filter(option => option.selected)
-      .map(option => parseInt(option.value));
-
-    if (isEdit) {
-      setEditingEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
-    } else {
-      setNewEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
-    }
-  };
-
   const handleSubmitEngineer = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -211,8 +166,9 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify({ engineer: newEngineer }),
+        body: JSON.stringify({ engineer: newEngineer })
       });
 
       const data = await response.json();
@@ -241,8 +197,9 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify({ engineer: editingEngineer }),
+        body: JSON.stringify({ engineer: editingEngineer })
       });
 
       const data = await response.json();
@@ -258,6 +215,47 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       setModalError(err.message || 'Failed to update engineer. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const getStatusBadgeVariant = (status) => {
+    const variants = {
+      available: 'success',
+      rolling_off: 'warning',
+      on_bench: 'info',
+      allocated: 'secondary'
+    };
+    return variants[status] || 'secondary';
+  };
+
+  const formatStatus = (status) => {
+    return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const getSortIcon = (field) => {
+    if (sortBy !== field) return '↕️';
+    return sortOrder === 'asc' ? '↑' : '↓';
+  };
+
+  const handleEditEngineer = (engineer) => {
+    setModalError(null);
+    setEditingEngineer({
+      ...engineer,
+      skill_ids: engineer.skills?.map(skill => skill.id) || []
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSkillChange = (e, isEdit = false) => {
+    const { options } = e.target;
+    const selectedIds = Array.from(options)
+      .filter(option => option.selected)
+      .map(option => parseInt(option.value));
+
+    if (isEdit) {
+      setEditingEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
+    } else {
+      setNewEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
     }
   };
 
@@ -310,7 +308,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                   </small>
                 </Col>
                 <Col xs="auto">
-                  <Button variant="primary" size="sm" onClick={handleAddEngineer}>
+                  <Button variant="primary" size="sm" onClick={handleShowAddModal}>
                     + Add Engineer
                   </Button>
                 </Col>
@@ -649,6 +647,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                     onChange={handleInputChange}
                   >
                     <option value="available">Available</option>
+                    <option value="available_soon">Available Soon</option>
+                    <option value="busy">Busy</option>
                     <option value="rolling_off">Rolling Off</option>
                     <option value="on_bench">On Bench</option>
                     <option value="allocated">Allocated</option>
@@ -656,7 +656,6 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                 </Form.Group>
               </Col>
             </Row>
-
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -723,6 +722,19 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
+                  <Form.Label>Target Rate ($/hour)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="target_rate"
+                    value={newEngineer.target_rate}
+                    onChange={handleInputChange}
+                    placeholder="e.g. 150"
+                    step="0.01"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
                   <Form.Label>Utilization (%)</Form.Label>
                   <Form.Control
                     type="number"
@@ -732,19 +744,6 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                     placeholder="e.g. 80"
                     min="0"
                     max="100"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Target Rate</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="target_rate"
-                    value={newEngineer.target_rate}
-                    onChange={handleInputChange}
-                    placeholder="e.g. 150"
-                    step="0.01"
                   />
                 </Form.Group>
               </Col>
@@ -813,7 +812,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               {modalError}
             </Alert>
           )}
-          <Form onSubmit={handleUpdateEngineer}>
+          {editingEngineer && (
+            <Form onSubmit={handleUpdateEngineer}>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -865,6 +865,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                     onChange={handleEditInputChange}
                   >
                     <option value="available">Available</option>
+                    <option value="available_soon">Available Soon</option>
+                    <option value="busy">Busy</option>
                     <option value="rolling_off">Rolling Off</option>
                     <option value="on_bench">On Bench</option>
                     <option value="allocated">Allocated</option>
@@ -995,7 +997,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                 placeholder="Additional notes about the engineer"
               />
             </Form.Group>
-          </Form>
+            </Form>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseEditModal} disabled={submitting}>

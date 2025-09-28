@@ -35,18 +35,28 @@ class Api::MatchingController < ApplicationController
   def trigger_matching
     if params[:opportunity_id].present?
       # Trigger matching for specific opportunity
-      MatchingJob.perform_later(params[:opportunity_id])
-      message = "Matching triggered for specific opportunity"
+      if Rails.env.development?
+        MatchingJob.perform_now(params[:opportunity_id])
+        message = "Matching completed for specific opportunity"
+      else
+        MatchingJob.perform_later(params[:opportunity_id])
+        message = "Matching triggered for specific opportunity"
+      end
     else
       # Trigger matching for all active opportunities
-      MatchingJob.perform_later
-      message = "Matching triggered for all active opportunities"
+      if Rails.env.development?
+        MatchingJob.perform_now
+        message = "Matching completed for all active opportunities"
+      else
+        MatchingJob.perform_later
+        message = "Matching triggered for all active opportunities"
+      end
     end
 
     render json: {
       success: true,
       message: message,
-      job_id: "queued"
+      job_id: "completed"
     }
   end
 

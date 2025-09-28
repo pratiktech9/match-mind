@@ -8,6 +8,10 @@ class Match < ApplicationRecord
   validates :score, presence: true, numericality: { in: 0.0..100.0 }
   validates :status, presence: true, inclusion: { in: %w[pending contacted interested rejected hired archived] }
 
+  # Callbacks
+  after_create :create_match_notification
+  after_update :create_match_notification_if_high_score
+
   # Scopes
   scope :high_score, ->(min_score = 80) { where("score >= ?", min_score) }
   scope :by_engineer, ->(engineer) { where(engineer: engineer) }
@@ -114,5 +118,21 @@ class Match < ApplicationRecord
     end
 
     factors
+  end
+
+  private
+
+  def create_match_notification
+    # Only create notification for high-score matches
+    if score >= 80
+      Notification.create_potential_match_notification(engineer, client_opportunity, score)
+    end
+  end
+
+  def create_match_notification_if_high_score
+    # Only create notification if score changed and is now high
+    if saved_change_to_score? && score >= 80 && score_before_last_save < 80
+      Notification.create_potential_match_notification(engineer, client_opportunity, score)
+    end
   end
 end

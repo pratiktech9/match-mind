@@ -11,6 +11,9 @@ class ClientOpportunity < ApplicationRecord
   validates :status, inclusion: { in: %w[active inactive closed filled] }
   validates :priority, inclusion: { in: %w[low medium high urgent] }
 
+  # Callbacks
+  after_create :create_new_opportunity_notification
+
   scope :active, -> { where(status: "active") }
   scope :by_geo, ->(geo) { where(geo: geo) }
   scope :by_employment_type, ->(type) { where(employment_type: type) }
@@ -31,5 +34,11 @@ class ClientOpportunity < ApplicationRecord
 
   def is_skill_required?(skill)
     client_opportunity_skills.find_by(skill: skill)&.required || false
+  end
+
+  private
+
+  def create_new_opportunity_notification
+    Notification.create_new_opportunity_notification(self)
   end
 end

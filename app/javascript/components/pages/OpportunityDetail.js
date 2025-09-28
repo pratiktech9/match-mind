@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container, Row, Col, Card, Button, Badge, Spinner, Alert,
-  Modal, Form, Table
+  Modal
 } from 'react-bootstrap';
 
 const OpportunityDetail = ({ opportunityId, onNavigate }) => {
@@ -19,9 +19,9 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
       fetchOpportunityDetails();
       fetchMatches();
     }
-  }, [opportunityId]);
+  }, [opportunityId, fetchOpportunityDetails, fetchMatches]);
 
-  const fetchOpportunityDetails = async () => {
+  const fetchOpportunityDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -39,9 +39,9 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [opportunityId]);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setMatchesLoading(true);
 
     try {
@@ -58,7 +58,7 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
     } finally {
       setMatchesLoading(false);
     }
-  };
+  }, [opportunityId]);
 
   const handleBackToList = () => {
     onNavigate('opportunities');
@@ -283,7 +283,7 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
 
                 {matches.length > 0 ? (
                   <div className="row">
-                    {matches.slice(0, 3).map((match, index) => {
+                    {matches.slice(0, 3).map((match) => {
                       const engineer = match.engineer;
                       const score = Math.round(match.score || 0);
                       const budgetCheck = getBudgetCompatibility(
@@ -386,7 +386,7 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
                       <div className="text-muted">
                         <div className="mb-2" style={{ fontSize: '3rem' }}>🔍</div>
                         <h5>No Matches Found</h5>
-                        <p>We couldn't find any suitable engineers for this opportunity at the moment.</p>
+                        <p>We couldn&apos;t find any suitable engineers for this opportunity at the moment.</p>
                         <Button
                           variant="primary"
                           onClick={fetchMatches}
