@@ -27,4 +27,8 @@ class Client < ApplicationRecord
          .where(client_opportunities: { client_id: id })
          .distinct
   end
+
+  def skill_names
+    skills_used.pluck(:name)
+  end
 end
