@@ -3,7 +3,7 @@ require 'sidekiq-cron/web'
 
 Sidekiq.configure_server do |config|
   config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
-  
+
   # Set up cron jobs when server starts
   schedule_file = Rails.root.join('config', 'cron_schedule.yml')
   if File.exist?(schedule_file)

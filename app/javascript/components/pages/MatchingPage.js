@@ -83,11 +83,11 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       }
 
       const data = await response.json();
-      
+
       // Show success message
       setShowTriggerModal(false);
       alert(data.message + '. The matching process is running in the background.');
-      
+
       // Refresh matches after a short delay
       setTimeout(() => {
         fetchMatches();
@@ -117,9 +117,9 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       }
 
       const data = await response.json();
-      
+
       // Update the match in the list
-      setMatches(prev => prev.map(match => 
+      setMatches(prev => prev.map(match =>
         match.id === matchId ? { ...match, status: newStatus } : match
       ));
 
@@ -204,8 +204,8 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                   </small>
                 </Col>
                 <Col xs="auto">
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     size="sm"
                     onClick={() => setShowTriggerModal(true)}
                     disabled={triggering}
@@ -265,8 +265,8 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                     <Form.Group>
                       <Form.Label className="small fw-bold text-muted">Quick Filters</Form.Label>
                       <div className="d-flex gap-2">
-                        <Button 
-                          variant="outline-success" 
+                        <Button
+                          variant="outline-success"
                           size="sm"
                           onClick={() => {
                             setFilters({ status: '', client_id: '', engineer_id: '', min_score: '80' });
@@ -275,8 +275,8 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                         >
                           High Scores
                         </Button>
-                        <Button 
-                          variant="outline-info" 
+                        <Button
+                          variant="outline-info"
                           size="sm"
                           onClick={() => {
                             setFilters({ status: 'pending', client_id: '', engineer_id: '', min_score: '' });
@@ -292,8 +292,8 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                     <Form.Group>
                       <Form.Label className="small fw-bold text-muted">Actions</Form.Label>
                       <div className="d-flex gap-2">
-                        <Button 
-                          variant="outline-secondary" 
+                        <Button
+                          variant="outline-secondary"
                           size="sm"
                           onClick={() => {
                             setFilters({ status: '', client_id: '', engineer_id: '', min_score: '' });
@@ -367,7 +367,7 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                           </td>
                           <td className="py-3">
                             <div className="d-flex align-items-center">
-                              <Badge 
+                              <Badge
                                 bg={getScoreBadgeVariant(match.score)}
                                 className="me-2"
                               >
@@ -396,8 +396,8 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                           </td>
                           <td className="py-3">
                             <div className="small text-muted">
-                              {match.matched_at ? 
-                                new Date(match.matched_at).toLocaleDateString() : 
+                              {match.matched_at ?
+                                new Date(match.matched_at).toLocaleDateString() :
                                 new Date(match.created_at).toLocaleDateString()}
                             </div>
                           </td>
@@ -430,7 +430,7 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                             <div className="mb-2" style={{ fontSize: '3rem' }}>⚡</div>
                             <h5>No Matches Found</h5>
                             <p>Try running the matching process or adjusting your filters.</p>
-                            <Button 
+                            <Button
                               variant="primary"
                               onClick={() => setShowTriggerModal(true)}
                             >

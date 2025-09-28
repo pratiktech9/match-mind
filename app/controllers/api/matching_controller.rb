@@ -6,21 +6,21 @@ class Api::MatchingController < ApplicationController
 
   def index
     matches = Match.includes(:engineer, :client, :client_opportunity)
-    
+
     # Apply filters
     matches = matches.by_status(params[:status]) if params[:status].present?
     matches = matches.by_client(params[:client_id]) if params[:client_id].present?
     matches = matches.by_engineer(params[:engineer_id]) if params[:engineer_id].present?
     matches = matches.by_opportunity(params[:opportunity_id]) if params[:opportunity_id].present?
     matches = matches.high_score(params[:min_score]) if params[:min_score].present?
-    
+
     # Pagination
     page = params[:page]&.to_i || 1
     per_page = params[:per_page]&.to_i || 20
     per_page = [per_page, 50].min # Max 50 per page
-    
+
     matches = matches.page(page).per(per_page)
-    
+
     render json: {
       data: matches.map { |match| match_json(match) },
       meta: {
@@ -42,7 +42,7 @@ class Api::MatchingController < ApplicationController
       MatchingJob.perform_later
       message = "Matching triggered for all active opportunities"
     end
-    
+
     render json: {
       success: true,
       message: message,
@@ -109,7 +109,7 @@ class Api::MatchingController < ApplicationController
 
   def update_match_status
     match = Match.find(params[:id])
-    
+
     if match.update(status: params[:status])
       render json: {
         data: match_json(match),

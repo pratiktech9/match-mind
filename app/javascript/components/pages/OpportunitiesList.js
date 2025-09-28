@@ -489,8 +489,8 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
                           </td>
                           <td className="py-3">
                             <div className="d-flex gap-2">
-                              <Button 
-                                variant="outline-primary" 
+                              <Button
+                                variant="outline-primary"
                                 size="sm"
                                 onClick={() => handleViewOpportunity(opportunity.id)}
                               >

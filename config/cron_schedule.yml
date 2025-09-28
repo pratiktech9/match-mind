@@ -5,7 +5,7 @@ daily_matching:
   description: 'Daily AI matching process for all active opportunities'
   args: []
 
-# Weekly cleanup job - runs every Sunday at 3 AM  
+# Weekly cleanup job - runs every Sunday at 3 AM
 weekly_cleanup:
   cron: '0 3 * * 0'
   class: 'MatchingCleanupJob'

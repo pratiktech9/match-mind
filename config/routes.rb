@@ -37,7 +37,7 @@ Rails.application.routes.draw do
     get "opportunities/:opportunity_id/matches", to: "matching#find_matches_for_opportunity"
     get "engineers/:engineer_id/matches", to: "matching#find_matches_for_engineer"
     post "matches", to: "matching#create_match"
-    
+
     # Matching management routes
     get "matches", to: "matching#index"
     post "matching/trigger", to: "matching#trigger_matching"

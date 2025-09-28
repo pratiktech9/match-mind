@@ -103,7 +103,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
     const hourlyRate = parseInt(targetRate);
     const annualBudget = budget > 1000 ? budget : budget * 1000; // Assume if < 1000 it's in thousands
     const annualRate = hourlyRate * 40 * 52; // Assuming 40 hours/week, 52 weeks/year
-    
+
     if (annualRate <= annualBudget) return { icon: '✅', text: 'Within budget' };
     if (annualRate <= annualBudget * 1.1) return { icon: '⚠️', text: 'Slightly above budget' };
     return { icon: '❌', text: 'Above budget' };
@@ -301,19 +301,19 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
                         <div className="mb-2">
                           <strong>Current:</strong> {
                             engineer.status === 'available' ? 'Available immediately' :
-                            engineer.status === 'rolling_off_soon' ? 'Available soon' : 
+                            engineer.status === 'rolling_off_soon' ? 'Available soon' :
                             engineer.status === 'on_bench' ? 'On bench' : 'On project'}
                         </div>
                         <div className="mb-2">
-                          <strong>Notice Period:</strong> {engineer.notice_date ? 
-                            `${Math.ceil((new Date(engineer.notice_date) - new Date()) / (1000 * 60 * 60 * 24))} days` : 
+                          <strong>Notice Period:</strong> {engineer.notice_date ?
+                            `${Math.ceil((new Date(engineer.notice_date) - new Date()) / (1000 * 60 * 60 * 24))} days` :
                             '2 weeks'}
                         </div>
                       </Col>
                       <Col md={6}>
                         <div className="mb-2">
-                          <strong>Target Rate:</strong> {engineer.target_rate ? 
-                            `$${engineer.target_rate}/hour` : 
+                          <strong>Target Rate:</strong> {engineer.target_rate ?
+                            `$${engineer.target_rate}/hour` :
                             'TBD'}
                         </div>
                         <div className="mb-2">
@@ -378,16 +378,16 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
                                   <strong>Role:</strong> {opportunity.title || opportunity.job_role || 'Developer'}
                                 </div>
                                 <div className="small mb-1">
-                                  <strong>Skills:</strong> {opportunity.skills ? 
-                                    opportunity.skills.slice(0, 2).map(skill => skill.name).join(', ') : 
+                                  <strong>Skills:</strong> {opportunity.skills ?
+                                    opportunity.skills.slice(0, 2).map(skill => skill.name).join(', ') :
                                     'Various'}
                                 </div>
                                 <div className="small mb-1">
                                   <strong>Timeline:</strong> {opportunity.duration || '6 months'}
                                 </div>
                                 <div className="small mb-1">
-                                  <strong>Budget:</strong> {opportunity.budget ? 
-                                    `$${opportunity.budget >= 1000 ? opportunity.budget.toLocaleString() : opportunity.budget + 'k'}` : 
+                                  <strong>Budget:</strong> {opportunity.budget ?
+                                    `$${opportunity.budget >= 1000 ? opportunity.budget.toLocaleString() : opportunity.budget + 'k'}` :
                                     'TBD'}
                                 </div>
                               </div>
