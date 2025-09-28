@@ -25,6 +25,11 @@ Rails.application.routes.draw do
           post :generate_insights
         end
       end
+
+      # Dashboard routes
+      get "dashboard/stats", to: "dashboard#stats"
+      get "dashboard/availability-calendar", to: "dashboard#availability_calendar"
+      get "dashboard/urgent-matches", to: "dashboard#urgent_matches"
     end
   end
 

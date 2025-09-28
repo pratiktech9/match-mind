@@ -25,9 +25,7 @@ const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
       clients: 'Clients',
       opportunities: 'Opportunities',
       matching: 'Matching',
-      notifications: 'Notifications',
-      analytics: 'Analytics',
-      settings: 'Settings'
+      notifications: 'Notifications'
     };
     return titles[page] || title || 'Match Mind';
   };

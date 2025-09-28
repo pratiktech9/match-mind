@@ -17,26 +17,15 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
   };
 
   const menuItems = [
-    { id: 'dashboard', icon: '🏠', label: 'Dashboard', active: false },
+    { id: 'dashboard', icon: '🏠', label: 'Dashboard', active: currentPage === 'dashboard' },
     { id: 'engineers', icon: '👥', label: 'Engineers', active: currentPage === 'engineers' },
     { id: 'clients', icon: '🏢', label: 'Clients', active: currentPage === 'clients' },
     { id: 'opportunities', icon: '💼', label: 'Opportunities', active: currentPage === 'opportunities' },
-    { id: 'matching', icon: '⚡', label: 'Matching', active: false },
-    { id: 'notifications', icon: '🔔', label: 'Notifications', active: currentPage === 'notifications' },
-    { id: 'analytics', icon: '📊', label: 'Analytics', active: false },
-    { id: 'settings', icon: '⚙️', label: 'Settings', active: false },
+    { id: 'matching', icon: '⚡', label: 'Matching', active: currentPage === 'matching' },
+    { id: 'notifications', icon: '🔔', label: 'Notifications', active: currentPage === 'notifications' }
   ];
 
-  const savedSearches = [
-    { id: 1, name: 'React US Available' },
-    { id: 2, name: 'Python FinTech' },
-    { id: 3, name: 'Urgent DevOps' },
-  ];
 
-  const favoriteMatches = [
-    { id: 1, engineer: 'Sarah Chen', client: 'TechCorp' },
-    { id: 2, engineer: 'Mike Ross', client: 'FinBank' },
-  ];
 
   return (
     <div className={`navbar-container ${isCollapsed ? 'collapsed' : ''}`}>
@@ -73,49 +62,7 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
             ))}
           </Nav>
 
-          {!isCollapsed && (
-            <>
-              {/* Saved Searches */}
-              <div className="nav-section">
-                <div className="nav-section-header">
-                  <span className="section-icon">🔍</span>
-                  <span className="section-title">Saved Searches</span>
-                </div>
-                <ListGroup variant="flush" className="nav-subsection">
-                  {savedSearches.map((search) => (
-                    <ListGroup.Item
-                      key={search.id}
-                      action
-                      className="nav-subitem"
-                    >
-                      <span className="bullet">·</span>
-                      {search.name}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              </div>
 
-              {/* Favorite Matches */}
-              <div className="nav-section">
-                <div className="nav-section-header">
-                  <span className="section-icon">⭐</span>
-                  <span className="section-title">Favorite Matches</span>
-                </div>
-                <ListGroup variant="flush" className="nav-subsection">
-                  {favoriteMatches.map((match) => (
-                    <ListGroup.Item
-                      key={match.id}
-                      action
-                      className="nav-subitem"
-                    >
-                      <span className="bullet">·</span>
-                      {match.engineer} → {match.client}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              </div>
-            </>
-          )}
         </div>
       </nav>
 
@@ -274,64 +221,7 @@ const Navbar = ({ onNavigate, currentPage, onToggle }) => {
           margin-right: 0;
         }
 
-        .nav-section {
-          margin: 1.5rem 0 0 0;
-          padding-top: 1rem;
-          border-top: 1px solid #475569;
-        }
 
-        .nav-section-header {
-          display: flex;
-          align-items: center;
-          padding: 0.5rem 1.25rem;
-          font-weight: 600;
-          font-size: 0.875rem;
-          color: #94a3b8;
-        }
-
-        .section-icon {
-          margin-right: 0.75rem;
-          font-size: 1rem;
-        }
-
-        .section-title {
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .nav-subsection {
-          list-style: none;
-          margin: 0.5rem 0 0 0;
-          padding: 0;
-        }
-
-        .nav-subitem {
-          margin: 0.125rem 0;
-        }
-
-        .nav-sublink {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          padding: 0.625rem 1.25rem 0.625rem 3rem;
-          background: none;
-          border: none;
-          color: #94a3b8;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 0.875rem;
-          text-align: left;
-        }
-
-        .nav-sublink:hover {
-          background-color: #475569;
-          color: #cbd5e1;
-        }
-
-        .bullet {
-          margin-right: 0.75rem;
-          font-weight: bold;
-        }
 
         /* Scrollbar styling */
         .sidebar-content::-webkit-scrollbar {

@@ -10,13 +10,6 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (engineerId) {
-      fetchEngineerDetails();
-      fetchMatchingOpportunities();
-    }
-  }, [engineerId, fetchEngineerDetails, fetchMatchingOpportunities]);
-
   const fetchEngineerDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -55,6 +48,13 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
       setMatchesLoading(false);
     }
   }, [engineerId]);
+
+  useEffect(() => {
+    if (engineerId) {
+      fetchEngineerDetails();
+      fetchMatchingOpportunities();
+    }
+  }, [engineerId, fetchEngineerDetails, fetchMatchingOpportunities]);
 
   const handleBackToList = () => {
     onNavigate('engineers');
@@ -172,19 +172,6 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
                         </Badge>
                       </div>
                     </div>
-                  </div>
-                </Col>
-                <Col xs="auto">
-                  <div className="d-flex gap-2">
-                    <Button variant="outline-primary" size="sm">
-                      Match
-                    </Button>
-                    <Button variant="outline-warning" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="outline-secondary" size="sm">
-                      History
-                    </Button>
                   </div>
                 </Col>
               </Row>
