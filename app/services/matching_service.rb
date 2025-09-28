@@ -78,14 +78,14 @@ class MatchingService
         messages: [
           {
             role: "system",
-            content: 'You are an expert technical recruiter. Analyze the match between an engineer and a job opportunity. Return ONLY a JSON object with "score" (0-100) and "explanation" (string).'
+            content: "You are an expert technical recruiter. Analyze the match between an engineer and a job opportunity. Return ONLY a valid JSON object with 'score' (number 0-100) and 'explanation' (string). Be realistic with scores - a Python developer should score much lower for a Ruby on Rails role than a Ruby developer would."
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.3,
+        temperature: 0.7,
         max_tokens: 500
       }.to_json
     })
@@ -143,7 +143,7 @@ class MatchingService
     required_skills = opportunity.required_skills.pluck(:name).join(", ")
 
     <<~PROMPT
-      Analyze the match between this engineer and job opportunity:
+      You are an expert technical recruiter. Analyze the match between this engineer and job opportunity.
 
       ENGINEER:
       - Name: #{engineer.name}
@@ -162,13 +162,15 @@ class MatchingService
       - All Skills: #{opportunity_skills}
       - Required Skills: #{required_skills}
 
-      Rate the match from 0-100 considering:
-      1. Skill alignment (40% weight)
-      2. Budget compatibility (20% weight)
-      3. Geographic fit (20% weight)
-      4. Availability and timing (20% weight)
+      IMPORTANT: Rate the match from 0-100 based on:
+      1. Skill alignment (40% weight) - How many required skills does the engineer have?
+      2. Budget compatibility (20% weight) - Does the engineer's rate fit the budget?
+      3. Geographic fit (20% weight) - Can they work in the required location?
+      4. Availability and timing (20% weight) - Are they available when needed?
 
-      Return JSON: {"score": 85, "explanation": "Detailed explanation here"}
+      CRITICAL: Give different scores for different matches. A Python developer should NOT score 85% for a Ruby on Rails role. Be realistic and vary the scores based on actual skill overlap.
+
+      Return ONLY a valid JSON object with "score" (number 0-100) and "explanation" (string):
     PROMPT
   end
 
