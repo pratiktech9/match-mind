@@ -66,11 +66,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     @engineer = Engineer.new(engineer_params)
 
     if @engineer.save
-      # Add skills if provided
-      if params[:skill_ids].present?
-        add_skills_to_engineer(@engineer, params[:skill_ids])
-      end
-
+      #   add_skills_to_engineer(@engineer, skill_ids) if skill_ids.present?
       render_success(engineer_json(@engineer), "Engineer created successfully", :created)
     else
       render_error(@engineer.errors.full_messages.join(", "))
@@ -80,12 +76,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
   # PATCH/PUT /api/v1/engineers/:id
   def update
     if @engineer.update(engineer_params)
-      # Update skills if provided
-      if params[:skill_ids].present?
-        @engineer.engineer_skills.destroy_all
-        add_skills_to_engineer(@engineer, params[:skill_ids])
-      end
-
+      #   update_engineer_skills(@engineer, skill_ids)
       render_success(engineer_json(@engineer), "Engineer updated successfully")
     else
       render_error(@engineer.errors.full_messages.join(", "))
@@ -106,10 +97,20 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     render_error("Engineer not found", :not_found)
   end
 
+  def skill_ids
+    params[:engineer][:skill_ids]&.reject(&:blank?)
+  end
+
+  def update_engineer_skills(engineer, skill_ids)
+    engineer.engineer_skills.destroy_all
+    add_skills_to_engineer(engineer, skill_ids) if skill_ids.present?
+  end
+
   def engineer_params
     params.require(:engineer).permit(
       :name, :email, :country, :status, :current_client, :industry_experience,
-      :notice_date, :expected_end_date, :return_date, :notes, :utilization, :target_rate
+      :notice_date, :expected_end_date, :return_date, :notes, :utilization, :target_rate,
+      skill_ids: []
     )
   end
 
@@ -155,17 +156,14 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     base_json
   end
 
-  def add_skills_to_engineer(engineer, skill_data)
-    skill_data.each do |skill_info|
-      if skill_info.is_a?(Hash)
-        skill = Skill.find_or_create_by(name: skill_info[:name] || skill_info["name"])
-        level = skill_info[:level] || skill_info["level"] || "secondary"
-        engineer.engineer_skills.create(skill: skill, level: level)
-      else
-        # If it's just an ID or name
-        skill = skill_info.to_s.match(/^\d+$/) ? Skill.find(skill_info) : Skill.find_or_create_by(name: skill_info)
-        engineer.engineer_skills.create(skill: skill, level: "secondary")
-      end
+  def add_skills_to_engineer(engineer, skill_ids)
+    skill_ids.each do |skill_id|
+      skill = Skill.find(skill_id)
+      engineer.engineer_skills.create!(skill: skill)
+    rescue ActiveRecord::RecordNotFound
+      Rails.logger.error "Skill not found: #{skill_id}"
+    rescue => e
+      Rails.logger.error "Error adding skill #{skill_id} to engineer: #{e.message}"
     end
   end
 end

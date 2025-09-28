@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
-  Table, Pagination, Spinner, Alert
+  Table, Pagination, Spinner, Alert, Modal
 } from 'react-bootstrap';
 
 const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [engineers, setEngineers] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -18,6 +19,28 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEngineer, setEditingEngineer] = useState(null);
+  const [newEngineer, setNewEngineer] = useState({
+    name: '',
+    email: '',
+    country: '',
+    status: 'available',
+    current_client: '',
+    industry_experience: '',
+    notice_date: '',
+    expected_end_date: '',
+    return_date: '',
+    notes: '',
+    utilization: '',
+    target_rate: '',
+    skill_ids: []
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState(null);
 
   const itemsPerPage = 10;
 
@@ -57,6 +80,21 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     fetchEngineers();
   }, [fetchEngineers]);
 
+  // Fetch skills for form
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+
+  const fetchSkills = async () => {
+    try {
+      const response = await fetch('/api/v1/skills');
+      const data = await response.json();
+      setSkills(data.data || []);
+    } catch (err) {
+      console.error('Error fetching skills:', err);
+    }
+  };
+
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
@@ -95,6 +133,132 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const getSortIcon = (field) => {
     if (sortBy !== field) return '↕️';
     return sortOrder === 'asc' ? '↑' : '↓';
+  };
+
+  // Modal handlers
+  const handleAddEngineer = () => {
+    setModalError(null);
+    setShowAddModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setNewEngineer({
+      name: '',
+      email: '',
+      country: '',
+      status: 'available',
+      current_client: '',
+      industry_experience: '',
+      notice_date: '',
+      expected_end_date: '',
+      return_date: '',
+      notes: '',
+      utilization: '',
+      target_rate: '',
+      skill_ids: []
+    });
+    setSubmitting(false);
+    setModalError(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingEngineer(null);
+    setSubmitting(false);
+    setModalError(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewEngineer(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditingEngineer(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditEngineer = (engineer) => {
+    setModalError(null);
+    setEditingEngineer({
+      ...engineer,
+      skill_ids: engineer.skills?.map(skill => skill.id) || []
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSkillChange = (e, isEdit = false) => {
+    const { options } = e.target;
+    const selectedIds = Array.from(options)
+      .filter(option => option.selected)
+      .map(option => parseInt(option.value));
+
+    if (isEdit) {
+      setEditingEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
+    } else {
+      setNewEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
+    }
+  };
+
+  const handleSubmitEngineer = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setModalError(null);
+
+    try {
+      const response = await fetch('/api/v1/engineers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ engineer: newEngineer }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to create engineer');
+      }
+
+      await fetchEngineers(); // Refresh the list
+      handleCloseModal();
+    } catch (err) {
+      console.error('Error creating engineer:', err);
+      setModalError(err.message || 'Failed to create engineer. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateEngineer = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setModalError(null);
+
+    try {
+      const response = await fetch(`/api/v1/engineers/${editingEngineer.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ engineer: editingEngineer }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to update engineer');
+      }
+
+      await fetchEngineers(); // Refresh the list
+      handleCloseEditModal();
+    } catch (err) {
+      console.error('Error updating engineer:', err);
+      setModalError(err.message || 'Failed to update engineer. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -146,7 +310,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                   </small>
                 </Col>
                 <Col xs="auto">
-                  <Button variant="primary" size="sm">
+                  <Button variant="primary" size="sm" onClick={handleAddEngineer}>
                     + Add Engineer
                   </Button>
                 </Col>
@@ -343,6 +507,13 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                               >
                                 View
                               </Button>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => handleEditEngineer(engineer)}
+                              >
+                                Edit
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -414,6 +585,438 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
           </Card>
         </Col>
       </Row>
+
+      {/* Add Engineer Modal */}
+      <Modal show={showAddModal} onHide={handleCloseModal} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Add New Engineer</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {modalError && (
+            <Alert variant="danger" className="mb-3" dismissible onClose={() => setModalError(null)}>
+              {modalError}
+            </Alert>
+          )}
+          <Form onSubmit={handleSubmitEngineer}>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Name *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={newEngineer.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter engineer name"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email *</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={newEngineer.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter email address"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Country</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="country"
+                    value={newEngineer.country}
+                    onChange={handleInputChange}
+                    placeholder="e.g. United States"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={newEngineer.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="available">Available</option>
+                    <option value="rolling_off">Rolling Off</option>
+                    <option value="on_bench">On Bench</option>
+                    <option value="allocated">Allocated</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Current Client</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="current_client"
+                    value={newEngineer.current_client}
+                    onChange={handleInputChange}
+                    placeholder="Enter current client"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Industry Experience</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="industry_experience"
+                    value={newEngineer.industry_experience}
+                    onChange={handleInputChange}
+                    placeholder="e.g. FinTech, Healthcare"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Notice Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="notice_date"
+                    value={newEngineer.notice_date}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Expected End Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="expected_end_date"
+                    value={newEngineer.expected_end_date}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Return Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="return_date"
+                    value={newEngineer.return_date}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Utilization (%)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="utilization"
+                    value={newEngineer.utilization}
+                    onChange={handleInputChange}
+                    placeholder="e.g. 80"
+                    min="0"
+                    max="100"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Target Rate</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="target_rate"
+                    value={newEngineer.target_rate}
+                    onChange={handleInputChange}
+                    placeholder="e.g. 150"
+                    step="0.01"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Skills</Form.Label>
+              <Form.Select
+                multiple
+                name="skill_ids"
+                value={newEngineer.skill_ids.map(id => id.toString())}
+                onChange={(e) => handleSkillChange(e, false)}
+                style={{ height: '120px' }}
+              >
+                {skills.map(skill => (
+                  <option key={skill.id} value={skill.id}>{skill.name}</option>
+                ))}
+              </Form.Select>
+              <Form.Text className="text-muted">
+                Hold Ctrl/Cmd to select multiple skills
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="notes"
+                value={newEngineer.notes}
+                onChange={handleInputChange}
+                placeholder="Additional notes about the engineer"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal} disabled={submitting}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmitEngineer}
+            disabled={submitting || !newEngineer.name || !newEngineer.email}
+          >
+            {submitting ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Creating...
+              </>
+            ) : (
+              'Create Engineer'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Engineer Modal */}
+      <Modal show={showEditModal} onHide={handleCloseEditModal} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Engineer</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {modalError && (
+            <Alert variant="danger" className="mb-3" dismissible onClose={() => setModalError(null)}>
+              {modalError}
+            </Alert>
+          )}
+          <Form onSubmit={handleUpdateEngineer}>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Name *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={editingEngineer?.name || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter engineer name"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email *</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={editingEngineer?.email || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter email address"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Country</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="country"
+                    value={editingEngineer?.country || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="e.g. United States"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={editingEngineer?.status || ''}
+                    onChange={handleEditInputChange}
+                  >
+                    <option value="available">Available</option>
+                    <option value="rolling_off">Rolling Off</option>
+                    <option value="on_bench">On Bench</option>
+                    <option value="allocated">Allocated</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Current Client</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="current_client"
+                    value={editingEngineer?.current_client || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter current client"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Industry Experience</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="industry_experience"
+                    value={editingEngineer?.industry_experience || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="e.g. FinTech, Healthcare"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Notice Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="notice_date"
+                    value={editingEngineer?.notice_date || ''}
+                    onChange={handleEditInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Expected End Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="expected_end_date"
+                    value={editingEngineer?.expected_end_date || ''}
+                    onChange={handleEditInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Return Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="return_date"
+                    value={editingEngineer?.return_date || ''}
+                    onChange={handleEditInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Utilization (%)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="utilization"
+                    value={editingEngineer?.utilization || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="e.g. 80"
+                    min="0"
+                    max="100"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Target Rate</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="target_rate"
+                    value={editingEngineer?.target_rate || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="e.g. 150"
+                    step="0.01"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Skills</Form.Label>
+              <Form.Select
+                multiple
+                name="skill_ids"
+                value={(editingEngineer?.skill_ids || []).map(id => id.toString())}
+                onChange={(e) => handleSkillChange(e, true)}
+                style={{ height: '120px' }}
+              >
+                {skills.map(skill => (
+                  <option key={skill.id} value={skill.id}>{skill.name}</option>
+                ))}
+              </Form.Select>
+              <Form.Text className="text-muted">
+                Hold Ctrl/Cmd to select multiple skills
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="notes"
+                value={editingEngineer?.notes || ''}
+                onChange={handleEditInputChange}
+                placeholder="Additional notes about the engineer"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseEditModal} disabled={submitting}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleUpdateEngineer}
+            disabled={submitting || !editingEngineer?.name || !editingEngineer?.email}
+          >
+            {submitting ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Updating...
+              </>
+            ) : (
+              'Update Engineer'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

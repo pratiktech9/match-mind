@@ -17,7 +17,7 @@ class Api::MatchingController < ApplicationController
     # Pagination
     page = params[:page]&.to_i || 1
     per_page = params[:per_page]&.to_i || 20
-    per_page = [per_page, 50].min # Max 50 per page
+    per_page = [ per_page, 50 ].min # Max 50 per page
 
     matches = matches.page(page).per(per_page)
 
@@ -97,7 +97,7 @@ class Api::MatchingController < ApplicationController
       client_opportunity: opportunity,
       score: score,
       explanation: explanation,
-      status: 'pending',
+      status: "pending",
       matched_at: Time.current
     )
 

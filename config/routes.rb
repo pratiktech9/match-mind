@@ -2,14 +2,14 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Sidekiq Web UI (for monitoring background jobs)
-  require 'sidekiq/web'
-  mount Sidekiq::Web => '/sidekiq'
+  require "sidekiq/web"
+  mount Sidekiq::Web => "/sidekiq"
 
   # API routes
   namespace :api do
     namespace :v1 do
       resources :engineers
-      resources :skills, only: [ :index, :show, :create ]
+      resources :skills, only: [ :index, :show ]
       resources :clients
       resources :opportunities
       resources :matches, only: [ :index, :show, :create, :destroy ]

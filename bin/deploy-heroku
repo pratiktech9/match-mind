@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Simple Heroku Deployment Script for Match Mind
+# Run this script to deploy your app to Heroku
+
+set -e
+
+echo "🚀 Starting Heroku deployment for Match Mind..."
+
+# Check if Heroku CLI is installed
+if ! command -v heroku &> /dev/null; then
+    echo "❌ Heroku CLI not found. Install it first:"
+    echo "   brew install heroku/brew/heroku"
+    exit 1
+fi
+
+# Check if logged in to Heroku
+if ! heroku auth:whoami &> /dev/null; then
+    echo "🔐 Please login to Heroku first:"
+    heroku login
+fi
+
+# Get app name from user
+read -p "Enter your Heroku app name (e.g., match-mind-app): " APP_NAME
+
+if [ -z "$APP_NAME" ]; then
+    echo "❌ App name cannot be empty"
+    exit 1
+fi
+
+echo "📱 Creating Heroku app: $APP_NAME"
+
+# Create Heroku app (will fail gracefully if exists)
+heroku create $APP_NAME --region us || echo "App might already exist, continuing..."
+
+# Add Heroku remote
+heroku git:remote -a $APP_NAME
+
+echo "🗄️ Setting up add-ons..."
+
+# Add PostgreSQL
+heroku addons:create heroku-postgresql:essential-0 -a $APP_NAME || echo "PostgreSQL might already exist"
+
+# Add Redis
+heroku addons:create heroku-redis:mini -a $APP_NAME || echo "Redis might already exist"
+
+echo "⚙️ Configuring environment variables..."
+
+# Set environment variables
+heroku config:set RAILS_MASTER_KEY=$(cat config/master.key) -a $APP_NAME
+heroku config:set RAILS_ENV=production -a $APP_NAME
+heroku config:set RACK_ENV=production -a $APP_NAME
+heroku config:set RAILS_SERVE_STATIC_FILES=true -a $APP_NAME
+heroku config:set RAILS_LOG_TO_STDOUT=true -a $APP_NAME
+heroku config:set WEB_CONCURRENCY=2 -a $APP_NAME
+heroku config:set SIDEKIQ_CONCURRENCY=10 -a $APP_NAME
+
+echo "📦 Deploying application..."
+
+# Deploy to Heroku
+git push heroku main
+
+echo "🗃️ Running database migrations..."
+
+# Run migrations
+heroku run rails db:migrate -a $APP_NAME
+
+# Seed database (optional)
+read -p "Do you want to seed the database with sample data? (y/n): " SEED_DB
+if [ "$SEED_DB" = "y" ] || [ "$SEED_DB" = "Y" ]; then
+    heroku run rails db:seed -a $APP_NAME
+fi
+
+echo "⚡ Scaling dynos..."
+
+# Scale dynos
+heroku ps:scale web=1 worker=1 -a $APP_NAME
+
+echo "✅ Deployment complete!"
+echo ""
+echo "🌐 Your app is available at: https://$APP_NAME.herokuapp.com"
+echo "📊 View logs: heroku logs --tail -a $APP_NAME"
+echo "🖥️ Open app: heroku open -a $APP_NAME"
+echo ""
+echo "🎉 Match Mind is now live on Heroku!"
