@@ -5,8 +5,8 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
       stats = {
         available: Engineer.available.count,
         rolling_off: Engineer.rolling_off_soon.count,
-        on_bench: Engineer.where(status: 'on_bench').count,
-        open_opportunities: Client.joins(:client_opportunities).where(client_opportunities: { status: 'active' }).count
+        on_bench: Engineer.where(status: "on_bench").count,
+        open_opportunities: Client.joins(:client_opportunities).where(client_opportunities: { status: "active" }).count
       }
 
       render json: { data: stats }
@@ -25,15 +25,15 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
       # Get availability for the next 7 days
       calendar_data = (0..6).map do |days_ahead|
         date = Date.current + days_ahead.days
-        day_name = date.strftime('%a')
+        day_name = date.strftime("%a")
 
         # Count engineers who are currently available or will be available by this date
-        available_count = Engineer.where(status: 'available').count
-        rolling_off_count = Engineer.where(status: 'rolling_off_soon')
-                                  .where('expected_end_date <= ? OR expected_end_date IS NULL', date)
+        available_count = Engineer.where(status: "available").count
+        rolling_off_count = Engineer.where(status: "rolling_off_soon")
+                                  .where("expected_end_date <= ? OR expected_end_date IS NULL", date)
                                   .count
 
-        total_count = [available_count + rolling_off_count, 0].max
+        total_count = [ available_count + rolling_off_count, 0 ].max
 
         {
           day: day_name,
@@ -57,8 +57,8 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
     begin
       # Get opportunities that have been open for a while and need urgent attention
       urgent_opportunities = ClientOpportunity.includes(:client, :client_opportunity_skills, :skills)
-                                            .where(status: 'active')
-                                            .where('created_at < ?', 1.day.ago)
+                                            .where(status: "active")
+                                            .where("created_at < ?", 1.day.ago)
                                             .order(created_at: :asc)
                                             .limit(3)
 
@@ -72,10 +72,10 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
 
         {
           id: opportunity.id,
-          client: opportunity.client&.name || 'Unknown Client',
-          role: opportunity.title || 'Untitled Role',
+          client: opportunity.client&.name || "Unknown Client",
+          role: opportunity.title || "Untitled Role",
           match_percentage: match_percentage,
-          days_open: [days_open, 0].max,
+          days_open: [ days_open, 0 ].max,
           budget: format_budget(opportunity.budget_min, opportunity.budget_max),
           skills: opportunity.skills.pluck(:name).first(3)
         }
@@ -99,7 +99,7 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
     return Engineer.none if skill_ids.empty?
 
     Engineer.joins(:skills)
-           .where(status: ['available', 'rolling_off_soon'])
+           .where(status: [ "available", "rolling_off_soon" ])
            .where(skills: { id: skill_ids })
            .distinct
            .limit(5)
@@ -127,7 +127,7 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
       score += (skills_score * 0.4)
 
       # Availability (30% weight)
-      availability_score = engineer.status == 'available' ? 100 : 70
+      availability_score = engineer.status == "available" ? 100 : 70
       score += (availability_score * 0.3)
 
       # Budget compatibility (20% weight)
@@ -148,7 +148,7 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
       location_score = 85 # Default reasonable score
       score += (location_score * 0.1)
 
-      [score.round, 100].min
+      [ score.round, 100 ].min
     rescue => e
       Rails.logger.error "Error calculating match percentage: #{e.message}"
       75
@@ -156,7 +156,7 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
   end
 
   def format_budget(min, max)
-    return 'Budget TBD' unless min || max
+    return "Budget TBD" unless min || max
 
     begin
       min_val = min.to_i if min
@@ -169,11 +169,11 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
       elsif max_val
         "Up to $#{max_val}/hr"
       else
-        'Budget TBD'
+        "Budget TBD"
       end
     rescue => e
       Rails.logger.error "Error formatting budget: #{e.message}"
-      'Budget TBD'
+      "Budget TBD"
     end
   end
 end
