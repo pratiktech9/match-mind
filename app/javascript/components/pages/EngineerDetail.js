@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container, Row, Col, Card, Button, Badge, Spinner, Alert
 } from 'react-bootstrap';
@@ -15,9 +15,9 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
       fetchEngineerDetails();
       fetchMatchingOpportunities();
     }
-  }, [engineerId]);
+  }, [engineerId, fetchEngineerDetails, fetchMatchingOpportunities]);
 
-  const fetchEngineerDetails = async () => {
+  const fetchEngineerDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -35,9 +35,9 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [engineerId]);
 
-  const fetchMatchingOpportunities = async () => {
+  const fetchMatchingOpportunities = useCallback(async () => {
     setMatchesLoading(true);
 
     try {
@@ -54,7 +54,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
     } finally {
       setMatchesLoading(false);
     }
-  };
+  }, [engineerId]);
 
   const handleBackToList = () => {
     onNavigate('engineers');
@@ -346,7 +346,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
 
                 {matchingOpportunities.length > 0 ? (
                   <div className="row">
-                    {matchingOpportunities.slice(0, 3).map((match, index) => {
+                    {matchingOpportunities.slice(0, 3).map((match) => {
                       const opportunity = match.opportunity;
                       const score = Math.round(match.score || 0);
                       const budgetCheck = getBudgetCompatibility(

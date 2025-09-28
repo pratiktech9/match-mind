@@ -116,7 +116,7 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      await response.json();
 
       // Update the match in the list
       setMatches(prev => prev.map(match =>
