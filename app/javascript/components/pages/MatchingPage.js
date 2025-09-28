@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert, Modal
@@ -7,6 +7,7 @@ import {
 const MatchingPage = ({ searchQuery = '', onNavigate }) => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
   const [triggering, setTriggering] = useState(false);
   const [filters, setFilters] = useState({
@@ -19,11 +20,25 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
+  const [debounceTimer, setDebounceTimer] = useState(null);
 
   const itemsPerPage = 20;
 
+  // Memoized filter string to prevent unnecessary re-renders
+  const filterString = useMemo(() => {
+    return JSON.stringify(filters);
+  }, [filters]);
+
   const fetchMatches = useCallback(async () => {
-    setLoading(true);
+    // Only show full loading on initial load
+    const isInitialLoad = matches.length === 0;
+
+    if (isInitialLoad) {
+      setLoading(true);
+    } else {
+      setDataLoading(true);
+    }
+
     setError(null);
 
     try {
@@ -52,17 +67,53 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       setError('Failed to load matches. Please try again.');
     } finally {
       setLoading(false);
+      setDataLoading(false);
     }
-  }, [currentPage, filters, searchQuery]);
+  }, [currentPage, filterString, searchQuery, matches.length]);
+
+  // Debounced version of fetchMatches for filter changes
+  const debouncedFetchMatches = useCallback(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    const timer = setTimeout(() => {
+      fetchMatches();
+    }, 300); // 300ms delay
+
+    setDebounceTimer(timer);
+  }, [fetchMatches, debounceTimer]);
 
   useEffect(() => {
     fetchMatches();
-  }, [fetchMatches]);
+  }, [currentPage, searchQuery]); // Only immediate fetch for page/search changes
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
-  };
+  useEffect(() => {
+    if (filterString !== '{}') { // Only debounce when filters actually exist
+      debouncedFetchMatches();
+    }
+  }, [filterString]); // Debounced fetch for filter changes
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
+
+  const handleFilterChange = useCallback((key, value) => {
+    if (key === 'batch') {
+      // Handle batch filter updates (for quick filter buttons)
+      setFilters(value);
+      setCurrentPage(1);
+    } else {
+      // Handle individual filter changes
+      setFilters(prev => ({ ...prev, [key]: value }));
+      setCurrentPage(1);
+    }
+  }, []);
 
   const handleTriggerMatching = async (opportunityId = null) => {
     setTriggering(true);
@@ -214,91 +265,15 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
 
             <Card.Body className="p-0">
               {/* Filters Section */}
-              <div className="p-3 bg-light border-bottom">
-                <Row>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Status</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.status}
-                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                      >
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="interested">Interested</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="hired">Hired</option>
-                        <option value="archived">Archived</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Min Score</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.min_score}
-                        onChange={(e) => handleFilterChange('min_score', e.target.value)}
-                      >
-                        <option value="">Any Score</option>
-                        <option value="90">90% and above</option>
-                        <option value="80">80% and above</option>
-                        <option value="70">70% and above</option>
-                        <option value="60">60% and above</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Quick Filters</Form.Label>
-                      <div className="d-flex gap-2">
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          onClick={() => {
-                            setFilters({ status: '', client_id: '', engineer_id: '', min_score: '80' });
-                            setCurrentPage(1);
-                          }}
-                        >
-                          High Scores
-                        </Button>
-                        <Button
-                          variant="outline-info"
-                          size="sm"
-                          onClick={() => {
-                            setFilters({ status: 'pending', client_id: '', engineer_id: '', min_score: '' });
-                            setCurrentPage(1);
-                          }}
-                        >
-                          New Matches
-                        </Button>
-                      </div>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Actions</Form.Label>
-                      <div className="d-flex gap-2">
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          onClick={() => {
-                            setFilters({ status: '', client_id: '', engineer_id: '', min_score: '' });
-                            setCurrentPage(1);
-                          }}
-                        >
-                          Clear Filters
-                        </Button>
-                      </div>
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </div>
+              <FilterSection filters={filters} onFilterChange={handleFilterChange} />
 
               {/* Matches Table */}
-              <div className="table-responsive">
+              <div className="table-responsive position-relative">
+                {dataLoading && (
+                  <div className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style={{ zIndex: 10 }}>
+                    <Spinner animation="border" size="sm" />
+                  </div>
+                )}
                 <Table hover className="mb-0">
                   <thead className="table-light">
                     <tr>
@@ -526,5 +501,92 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
     </Container>
   );
 };
+
+// Memoized Filter Components to prevent unnecessary re-renders
+const FilterSection = memo(({ filters, onFilterChange }) => {
+  return (
+    <div className="p-3 bg-light border-bottom">
+      <Row>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Status</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.status}
+              onChange={(e) => onFilterChange('status', e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="contacted">Contacted</option>
+              <option value="interested">Interested</option>
+              <option value="rejected">Rejected</option>
+              <option value="hired">Hired</option>
+              <option value="archived">Archived</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Min Score</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.min_score}
+              onChange={(e) => onFilterChange('min_score', e.target.value)}
+            >
+              <option value="">Any Score</option>
+              <option value="90">90% and above</option>
+              <option value="80">80% and above</option>
+              <option value="70">70% and above</option>
+              <option value="60">60% and above</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Quick Filters</Form.Label>
+            <div className="d-flex gap-2">
+              <Button
+                variant="outline-success"
+                size="sm"
+                onClick={() => {
+                  onFilterChange('batch', { status: '', client_id: '', engineer_id: '', min_score: '80' });
+                }}
+              >
+                High Scores
+              </Button>
+              <Button
+                variant="outline-info"
+                size="sm"
+                onClick={() => {
+                  onFilterChange('batch', { status: 'pending', client_id: '', engineer_id: '', min_score: '' });
+                }}
+              >
+                New Matches
+              </Button>
+            </div>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Actions</Form.Label>
+            <div className="d-flex gap-2">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => {
+                  onFilterChange('batch', { status: '', client_id: '', engineer_id: '', min_score: '' });
+                }}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          </Form.Group>
+        </Col>
+      </Row>
+    </div>
+  );
+});
+
+FilterSection.displayName = 'FilterSection';
 
 export default MatchingPage;

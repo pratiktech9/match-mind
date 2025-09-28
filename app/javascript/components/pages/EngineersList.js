@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert, Modal
@@ -8,6 +8,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [engineers, setEngineers] = useState([]);
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     status: '',
@@ -41,11 +42,25 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState(null);
+  const [debounceTimer, setDebounceTimer] = useState(null);
 
   const itemsPerPage = 10;
 
+  // Memoized filter string to prevent unnecessary re-renders
+  const filterString = useMemo(() => {
+    return JSON.stringify(filters);
+  }, [filters]);
+
   const fetchEngineers = useCallback(async () => {
-    setLoading(true);
+    // Only show full loading on initial load
+    const isInitialLoad = engineers.length === 0;
+
+    if (isInitialLoad) {
+      setLoading(true);
+    } else {
+      setDataLoading(true);
+    }
+
     setError(null);
 
     try {
@@ -72,13 +87,42 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       setError('Failed to load engineers. Please try again.');
     } finally {
       setLoading(false);
+      setDataLoading(false);
     }
-  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
+  }, [currentPage, filterString, sortBy, sortOrder, searchQuery, engineers.length]);
 
-  // Fetch engineers data
+  // Debounced version of fetchEngineers for filter changes
+  const debouncedFetchEngineers = useCallback(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    const timer = setTimeout(() => {
+      fetchEngineers();
+    }, 300); // 300ms delay
+
+    setDebounceTimer(timer);
+  }, [fetchEngineers, debounceTimer]);
+
+  // Fetch engineers data with different strategies
   useEffect(() => {
     fetchEngineers();
-  }, [fetchEngineers]);
+  }, [currentPage, sortBy, sortOrder, searchQuery]); // Immediate fetch for pagination, sorting, search
+
+  useEffect(() => {
+    if (filterString !== JSON.stringify({status:'',skills:'',availability:'',experience:''})) {
+      debouncedFetchEngineers();
+    }
+  }, [filterString]); // Debounced fetch for filter changes
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
 
   // Fetch skills for form
   useEffect(() => {
@@ -95,10 +139,10 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     }
   };
 
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
-  };
+  }, []);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -317,72 +361,15 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
 
             <Card.Body className="p-0">
               {/* Filters Section */}
-              <div className="p-3 bg-light border-bottom">
-                <Row>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Status</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.status}
-                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                      >
-                        <option value="">All Statuses</option>
-                        <option value="available">Available</option>
-                        <option value="rolling_off">Rolling Off</option>
-                        <option value="on_bench">On Bench</option>
-                        <option value="allocated">Allocated</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Skills</Form.Label>
-                      <Form.Control
-                        size="sm"
-                        type="text"
-                        placeholder="e.g. React, Python"
-                        value={filters.skills}
-                        onChange={(e) => handleFilterChange('skills', e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Availability</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.availability}
-                        onChange={(e) => handleFilterChange('availability', e.target.value)}
-                      >
-                        <option value="">Any Time</option>
-                        <option value="immediate">Immediate</option>
-                        <option value="within_week">Within a Week</option>
-                        <option value="within_month">Within a Month</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Experience</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.experience}
-                        onChange={(e) => handleFilterChange('experience', e.target.value)}
-                      >
-                        <option value="">All Levels</option>
-                        <option value="junior">Junior (0-2 years)</option>
-                        <option value="mid">Mid (3-5 years)</option>
-                        <option value="senior">Senior (6-8 years)</option>
-                        <option value="lead">Lead (9+ years)</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </div>
+              <EngineersFilterSection filters={filters} onFilterChange={handleFilterChange} skills={skills} />
 
               {/* Engineers Table */}
-              <div className="table-responsive">
+              <div className="table-responsive position-relative">
+                {dataLoading && (
+                  <div className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style={{ zIndex: 10 }}>
+                    <Spinner animation="border" size="sm" />
+                  </div>
+                )}
                 <Table hover className="mb-0">
                   <thead className="table-light">
                     <tr>
@@ -1023,5 +1010,82 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     </Container>
   );
 };
+
+// Memoized Filter Components to prevent unnecessary re-renders
+const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
+  return (
+    <div className="p-3 bg-light border-bottom">
+      <Row>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Status</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.status}
+              onChange={(e) => onFilterChange('status', e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="available">Available</option>
+              <option value="rolling_off">Rolling Off</option>
+              <option value="on_bench">On Bench</option>
+              <option value="assigned">Assigned</option>
+              <option value="unavailable">Unavailable</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Skills</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.skills}
+              onChange={(e) => onFilterChange('skills', e.target.value)}
+            >
+              <option value="">All Skills</option>
+              {skills.map(skill => (
+                <option key={skill.id} value={skill.name}>
+                  {skill.name}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Availability</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.availability}
+              onChange={(e) => onFilterChange('availability', e.target.value)}
+            >
+              <option value="">All</option>
+              <option value="immediate">Immediate</option>
+              <option value="2_weeks">Within 2 weeks</option>
+              <option value="1_month">Within 1 month</option>
+              <option value="3_months">Within 3 months</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Experience</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.experience}
+              onChange={(e) => onFilterChange('experience', e.target.value)}
+            >
+              <option value="">All Levels</option>
+              <option value="junior">Junior (0-2 years)</option>
+              <option value="mid">Mid-level (3-5 years)</option>
+              <option value="senior">Senior (6+ years)</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
+    </div>
+  );
+});
+
+EngineersFilterSection.displayName = 'EngineersFilterSection';
 
 export default EngineersList;

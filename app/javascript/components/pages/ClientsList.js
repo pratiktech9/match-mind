@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert, Modal
@@ -7,11 +7,11 @@ import {
 const ClientsList = ({ searchQuery = '', onNavigate }) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     industry: '',
-    status: '',
-    location: ''
+    status: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -27,11 +27,25 @@ const ClientsList = ({ searchQuery = '', onNavigate }) => {
     industry: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [debounceTimer, setDebounceTimer] = useState(null);
 
   const itemsPerPage = 10;
 
+  // Memoized filter string to prevent unnecessary re-renders
+  const filterString = useMemo(() => {
+    return JSON.stringify(filters);
+  }, [filters]);
+
   const fetchClients = useCallback(async () => {
-    setLoading(true);
+    // Only show full loading on initial load
+    const isInitialLoad = clients.length === 0;
+
+    if (isInitialLoad) {
+      setLoading(true);
+    } else {
+      setDataLoading(true);
+    }
+
     setError(null);
 
     try {
@@ -58,18 +72,47 @@ const ClientsList = ({ searchQuery = '', onNavigate }) => {
       setError('Failed to load clients. Please try again.');
     } finally {
       setLoading(false);
+      setDataLoading(false);
     }
-  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
+  }, [currentPage, filterString, sortBy, sortOrder, searchQuery, clients.length]);
 
-  // Fetch clients data
+  // Debounced version of fetchClients for filter changes
+  const debouncedFetchClients = useCallback(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    const timer = setTimeout(() => {
+      fetchClients();
+    }, 300); // 300ms delay
+
+    setDebounceTimer(timer);
+  }, [fetchClients, debounceTimer]);
+
+  // Fetch clients data with different strategies
   useEffect(() => {
     fetchClients();
-  }, [fetchClients]);
+  }, [currentPage, sortBy, sortOrder, searchQuery]); // Immediate fetch for pagination, sorting, search
 
-  const handleFilterChange = (key, value) => {
+  useEffect(() => {
+    if (filterString !== JSON.stringify({industry:'',status:''})) {
+      debouncedFetchClients();
+    }
+  }, [filterString]); // Debounced fetch for filter changes
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
+
+  const handleFilterChange = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
-  };
+  }, []);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -268,58 +311,15 @@ const ClientsList = ({ searchQuery = '', onNavigate }) => {
 
             <Card.Body className="p-0">
               {/* Filters Section */}
-              <div className="p-3 bg-light border-bottom">
-                <Row>
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Industry</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.industry}
-                        onChange={(e) => handleFilterChange('industry', e.target.value)}
-                      >
-                        <option value="">All Industries</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Fintech">Fintech</option>
-                        <option value="E-commerce">E-commerce</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Education">Education</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Status</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.status}
-                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                      >
-                        <option value="">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="pending">Pending</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Location</Form.Label>
-                      <Form.Control
-                        size="sm"
-                        type="text"
-                        placeholder="e.g. San Francisco, Remote"
-                        value={filters.location}
-                        onChange={(e) => handleFilterChange('location', e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </div>
+              <ClientsFilterSection filters={filters} onFilterChange={handleFilterChange} />
 
               {/* Clients Table */}
-              <div className="table-responsive">
+              <div className="table-responsive position-relative">
+                {dataLoading && (
+                  <div className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style={{ zIndex: 10 }}>
+                    <Spinner animation="border" size="sm" />
+                  </div>
+                )}
                 <Table hover className="mb-0">
                   <thead className="table-light">
                     <tr>
@@ -614,5 +614,52 @@ const ClientsList = ({ searchQuery = '', onNavigate }) => {
     </Container>
   );
 };
+
+// Memoized Filter Components to prevent unnecessary re-renders
+const ClientsFilterSection = memo(({ filters, onFilterChange }) => {
+  return (
+    <div className="p-3 bg-light border-bottom">
+      <Row>
+        <Col md={6}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Industry</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.industry}
+              onChange={(e) => onFilterChange('industry', e.target.value)}
+            >
+              <option value="">All Industries</option>
+              <option value="Technology">Technology</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Finance">Finance</option>
+              <option value="Education">Education</option>
+              <option value="Manufacturing">Manufacturing</option>
+              <option value="Retail">Retail</option>
+              <option value="Consulting">Consulting</option>
+              <option value="Other">Other</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Status</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.status}
+              onChange={(e) => onFilterChange('status', e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="prospect">Prospect</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
+    </div>
+  );
+});
+
+ClientsFilterSection.displayName = 'ClientsFilterSection';
 
 export default ClientsList;

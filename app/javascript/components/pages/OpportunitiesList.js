@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert, Modal
@@ -8,6 +8,7 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
   const [opportunities, setOpportunities] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     client_id: '',
@@ -39,11 +40,25 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
     skill_ids: []
   });
   const [submitting, setSubmitting] = useState(false);
+  const [debounceTimer, setDebounceTimer] = useState(null);
 
   const itemsPerPage = 10;
 
+  // Memoized filter string to prevent unnecessary re-renders
+  const filterString = useMemo(() => {
+    return JSON.stringify(filters);
+  }, [filters]);
+
   const fetchOpportunities = useCallback(async () => {
-    setLoading(true);
+    // Only show full loading on initial load
+    const isInitialLoad = opportunities.length === 0;
+
+    if (isInitialLoad) {
+      setLoading(true);
+    } else {
+      setDataLoading(true);
+    }
+
     setError(null);
 
     try {
@@ -70,13 +85,42 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
       setError('Failed to load opportunities. Please try again.');
     } finally {
       setLoading(false);
+      setDataLoading(false);
     }
-  }, [currentPage, filters, sortBy, sortOrder, searchQuery]);
+  }, [currentPage, filterString, sortBy, sortOrder, searchQuery, opportunities.length]);
 
-  // Fetch data
+  // Debounced version of fetchOpportunities for filter changes
+  const debouncedFetchOpportunities = useCallback(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    const timer = setTimeout(() => {
+      fetchOpportunities();
+    }, 300); // 300ms delay
+
+    setDebounceTimer(timer);
+  }, [fetchOpportunities, debounceTimer]);
+
+  // Fetch data with different strategies
   useEffect(() => {
     fetchOpportunities();
-  }, [fetchOpportunities]);
+  }, [currentPage, sortBy, sortOrder, searchQuery]); // Immediate fetch for pagination, sorting, search
+
+  useEffect(() => {
+    if (filterString !== JSON.stringify({status:'',client_id:'',priority:'',skills:''})) {
+      debouncedFetchOpportunities();
+    }
+  }, [filterString]); // Debounced fetch for filter changes
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
 
   useEffect(() => {
     fetchClients();
@@ -100,10 +144,10 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
   };
 
 
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
-  };
+  }, []);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -340,74 +384,15 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
 
             <Card.Body className="p-0">
               {/* Filters Section */}
-              <div className="p-3 bg-light border-bottom">
-                <Row>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Client</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.client_id}
-                        onChange={(e) => handleFilterChange('client_id', e.target.value)}
-                      >
-                        <option value="">All Clients</option>
-                        {clients.map(client => (
-                          <option key={client.id} value={client.id}>{client.name}</option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Status</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.status}
-                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                      >
-                        <option value="">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="closed">Closed</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Priority</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.priority}
-                        onChange={(e) => handleFilterChange('priority', e.target.value)}
-                      >
-                        <option value="">All Priorities</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-muted">Employment Type</Form.Label>
-                      <Form.Select
-                        size="sm"
-                        value={filters.employment_type}
-                        onChange={(e) => handleFilterChange('employment_type', e.target.value)}
-                      >
-                        <option value="">All Types</option>
-                        <option value="Full-time">Full-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Part-time">Part-time</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </div>
+              <OpportunitiesFilterSection filters={filters} onFilterChange={handleFilterChange} clients={clients} />
 
               {/* Opportunities Table */}
-              <div className="table-responsive">
+              <div className="table-responsive position-relative">
+                {dataLoading && (
+                  <div className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style={{ zIndex: 10 }}>
+                    <Spinner animation="border" size="sm" />
+                  </div>
+                )}
                 <Table hover className="mb-0">
                   <thead className="table-light">
                     <tr>
@@ -951,5 +936,83 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
     </Container>
   );
 };
+
+// Memoized Filter Components to prevent unnecessary re-renders
+const OpportunitiesFilterSection = memo(({ filters, onFilterChange, clients }) => {
+  return (
+    <div className="p-3 bg-light border-bottom">
+      <Row>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Client</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.client_id}
+              onChange={(e) => onFilterChange('client_id', e.target.value)}
+            >
+              <option value="">All Clients</option>
+              {clients.map(client => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Status</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.status}
+              onChange={(e) => onFilterChange('status', e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="filled">Filled</option>
+              <option value="on_hold">On Hold</option>
+              <option value="cancelled">Cancelled</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Priority</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.priority}
+              onChange={(e) => onFilterChange('priority', e.target.value)}
+            >
+              <option value="">All Priorities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group>
+            <Form.Label className="small fw-bold text-muted">Employment Type</Form.Label>
+            <Form.Select
+              size="sm"
+              value={filters.employment_type}
+              onChange={(e) => onFilterChange('employment_type', e.target.value)}
+            >
+              <option value="">All Types</option>
+              <option value="full_time">Full Time</option>
+              <option value="part_time">Part Time</option>
+              <option value="contract">Contract</option>
+              <option value="freelance">Freelance</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
+    </div>
+  );
+});
+
+OpportunitiesFilterSection.displayName = 'OpportunitiesFilterSection';
 
 export default OpportunitiesList;
