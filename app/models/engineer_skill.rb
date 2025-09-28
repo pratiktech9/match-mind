@@ -3,6 +3,9 @@ class EngineerSkill < ApplicationRecord
   belongs_to :engineer
   belongs_to :skill
 
+  # Callbacks
+  after_initialize :set_default_level, if: :new_record?
+
   # Validations
   validates :level, presence: true, inclusion: { in: %w[primary secondary] }
   validates :engineer_id, uniqueness: { scope: :skill_id }
@@ -36,5 +39,11 @@ class EngineerSkill < ApplicationRecord
 
   def engineer_name
     engineer.name
+  end
+
+  private
+
+  def set_default_level
+    self.level ||= "primary"
   end
 end
