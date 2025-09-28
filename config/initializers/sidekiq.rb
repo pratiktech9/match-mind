@@ -1,8 +1,18 @@
 require "sidekiq/web"
 require "sidekiq/cron/web"
 
+# Configure Redis connection with SSL support
+redis_config = {
+  url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0")
+}
+
+# Handle SSL connection for production (e.g., Heroku Redis)
+if ENV["REDIS_URL"]&.start_with?("rediss://")
+  redis_config[:ssl_params] = { verify_mode: OpenSSL::SSL::VERIFY_NONE }
+end
+
 Sidekiq.configure_server do |config|
-  config.redis = { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0") }
+  config.redis = redis_config
 
   # Set up cron jobs when server starts
   schedule_file = Rails.root.join("config", "cron_schedule.yml")
@@ -12,7 +22,7 @@ Sidekiq.configure_server do |config|
 end
 
 Sidekiq.configure_client do |config|
-  config.redis = { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0") }
+  config.redis = redis_config
 end
 
 # Authentication for Sidekiq Web UI (optional - remove in development)
