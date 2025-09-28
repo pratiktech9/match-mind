@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_27_181924) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_28_090643) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -99,6 +99,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_27_181924) do
     t.index ["engineer_id"], name: "index_matches_on_engineer_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.string "title"
+    t.text "message"
+    t.string "notification_type"
+    t.string "priority"
+    t.string "status"
+    t.bigint "engineer_id"
+    t.bigint "client_id"
+    t.bigint "client_opportunity_id"
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_notifications_on_client_id"
+    t.index ["client_opportunity_id"], name: "index_notifications_on_client_opportunity_id"
+    t.index ["created_at"], name: "index_notifications_on_created_at"
+    t.index ["engineer_id"], name: "index_notifications_on_engineer_id"
+    t.index ["notification_type", "status"], name: "index_notifications_on_notification_type_and_status"
+    t.index ["priority", "status"], name: "index_notifications_on_priority_and_status"
+    t.index ["read_at"], name: "index_notifications_on_read_at"
+  end
+
   create_table "skills", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -129,4 +150,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_27_181924) do
   add_foreign_key "matches", "client_opportunities"
   add_foreign_key "matches", "clients"
   add_foreign_key "matches", "engineers"
+  add_foreign_key "notifications", "client_opportunities"
+  add_foreign_key "notifications", "clients"
+  add_foreign_key "notifications", "engineers"
 end

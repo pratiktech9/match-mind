@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Navbar,
   Form,
@@ -9,6 +9,8 @@ import {
 
 const Header = ({ title, user, onSearch, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -17,13 +19,60 @@ const Header = ({ title, user, onSearch, onLogout }) => {
     }
   };
 
-  const notifications = [
-    { id: 1, type: 'match', message: 'New match found for TechCorp React Developer', time: '2 min ago', unread: true },
-    { id: 2, type: 'update', message: 'Sarah Chen updated her availability', time: '1 hour ago', unread: true },
-    { id: 3, type: 'deadline', message: 'FinBank Python role deadline in 2 days', time: '3 hours ago', unread: false },
-  ];
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/v1/notifications?per_page=10');
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.data || []);
+        setUnreadCount(data.meta?.unread_count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const markAsRead = async (notificationId) => {
+    try {
+      const response = await fetch(`/api/v1/notifications/${notificationId}/mark_read`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      });
+      if (response.ok) {
+        fetchNotifications(); // Refresh notifications
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch('/api/v1/notifications/mark_all_read', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      });
+      if (response.ok) {
+        fetchNotifications(); // Refresh notifications
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+        // Refresh notifications every 30 seconds
+        const interval = window.setInterval(fetchNotifications, 30000);
+        return () => window.clearInterval(interval);
+  }, []);
 
   return (
     <Navbar bg="white" className="border-bottom shadow-sm sticky-top">
@@ -87,37 +136,57 @@ const Header = ({ title, user, onSearch, onLogout }) => {
             <Dropdown.Menu style={{ width: '350px', minWidth: '320px' }}>
               <Dropdown.Header className="d-flex justify-content-between align-items-center">
                 <strong>Notifications</strong>
-                <Button variant="link" size="sm" className="p-0 text-primary">
-                  Mark all read
-                </Button>
+                {unreadCount > 0 && (
+                  <Button variant="link" size="sm" className="p-0 text-primary" onClick={markAllAsRead}>
+                    Mark all read
+                  </Button>
+                )}
               </Dropdown.Header>
 
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {notifications.map((notification) => (
-                  <Dropdown.Item
-                    key={notification.id}
-                    className={`d-flex align-items-start p-3 ${notification.unread ? 'bg-light' : ''}`}
-                  >
-                    <div className="flex-grow-1">
-                      <div className="small text-dark mb-1">
-                        {notification.message}
+                {notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <Dropdown.Item
+                      key={notification.id}
+                      className={`d-flex align-items-start p-3 ${notification.status === 'unread' ? 'bg-light' : ''}`}
+                      onClick={() => notification.status === 'unread' && markAsRead(notification.id)}
+                    >
+                      <div className="flex-grow-1">
+                        <div className="d-flex align-items-center mb-1">
+                          <span className="me-2">{notification.icon}</span>
+                          <div className="small text-dark fw-semibold">
+                            {notification.title}
+                          </div>
+                        </div>
+                        <div className="small text-muted mb-1">
+                          {notification.message}
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                            {notification.time_ago}
+                          </div>
+                          <Badge bg={notification.priority_color} size="sm">
+                            {notification.priority}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                        {notification.time}
-                      </div>
-                    </div>
-                    {notification.unread && (
-                      <Badge bg="primary" className="rounded-circle p-1" style={{ width: '8px', height: '8px' }}>
-                        <span className="visually-hidden">Unread</span>
-                      </Badge>
-                    )}
+                      {notification.status === 'unread' && (
+                        <div className="ms-2">
+                          <div className="bg-primary rounded-circle" style={{ width: '8px', height: '8px' }}></div>
+                        </div>
+                      )}
+                    </Dropdown.Item>
+                  ))
+                ) : (
+                  <Dropdown.Item className="text-center text-muted p-3">
+                    No notifications
                   </Dropdown.Item>
-                ))}
+                )}
               </div>
 
               <Dropdown.Divider />
               <div className="text-center p-2">
-                <Button variant="link" size="sm" className="text-primary">
+                <Button variant="link" size="sm" className="text-primary" onClick={() => window.onNavigate && window.onNavigate('notifications')}>
                   View all notifications
                 </Button>
               </div>

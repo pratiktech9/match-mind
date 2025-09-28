@@ -51,8 +51,6 @@ class MatchingJob < ApplicationJob
 
         if match.save
           Rails.logger.info "Saved match: #{engineer.name} -> #{opportunity.title} (Score: #{score})"
-        else
-          Rails.logger.error "Failed to save match: #{match.errors.full_messages.join(', ')}"
         end
       end
 

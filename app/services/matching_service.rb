@@ -62,8 +62,8 @@ class MatchingService
     opportunity_skill_names = opportunity.skills.pluck(:name)
     required_skill_names = opportunity.required_skills.pluck(:name)
 
-    skill_match_ratio = (engineer_skill_names & opportunity_skill_names).size.to_f / opportunity_skill_names.size
-    required_skill_match_ratio = (engineer_skill_names & required_skill_names).size.to_f / required_skill_names.size
+    skill_match_ratio = opportunity_skill_names.size > 0 ? (engineer_skill_names & opportunity_skill_names).size.to_f / opportunity_skill_names.size : 0
+    required_skill_match_ratio = required_skill_names.size > 0 ? (engineer_skill_names & required_skill_names).size.to_f / required_skill_names.size : 0
 
     score += (skill_match_ratio * 20).to_i
     score += (required_skill_match_ratio * 20).to_i

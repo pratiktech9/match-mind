@@ -12,6 +12,9 @@ class Engineer < ApplicationRecord
   validates :utilization, numericality: { in: 0..100 }, allow_nil: true
   validates :target_rate, numericality: { greater_than: 0 }, allow_nil: true
 
+  # Callbacks
+  after_update :create_availability_change_notification, if: :saved_change_to_status?
+
   # Scopes
   scope :available, -> { where(status: "available") }
   scope :rolling_off_soon, -> { where(status: "rolling_off_soon") }
@@ -86,5 +89,17 @@ class Engineer < ApplicationRecord
 
   def backend?
     skill_names.any? { |skill| skill.downcase.include?("backend") || skill.downcase.include?("rails") || skill.downcase.include?("node") || skill.downcase.include?("python") }
+  end
+
+  private
+
+  def create_availability_change_notification
+    old_status = saved_changes['status'][0]
+    new_status = saved_changes['status'][1]
+    
+    # Only create notification if status actually changed
+    if old_status != new_status
+      Notification.create_availability_change_notification(self, old_status, new_status)
+    end
   end
 end

@@ -13,6 +13,18 @@ Rails.application.routes.draw do
       resources :clients
       resources :opportunities
       resources :matches, only: [ :index, :show, :create, :destroy ]
+      resources :notifications do
+        member do
+          patch :mark_read
+          patch :mark_unread
+          patch :archive
+        end
+        collection do
+          patch :mark_all_read
+          get :summary
+          post :generate_insights
+        end
+      end
     end
   end
 

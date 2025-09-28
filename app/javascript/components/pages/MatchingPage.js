@@ -89,7 +89,7 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       alert(data.message + '. The matching process is running in the background.');
 
       // Refresh matches after a short delay
-      setTimeout(() => {
+      window.setTimeout(() => {
         fetchMatches();
       }, 2000);
 
@@ -129,17 +129,6 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
     }
   };
 
-  const getStatusBadgeVariant = (status) => {
-    const variants = {
-      pending: 'secondary',
-      contacted: 'info',
-      interested: 'warning',
-      rejected: 'danger',
-      hired: 'success',
-      archived: 'dark'
-    };
-    return variants[status] || 'secondary';
-  };
 
   const getScoreBadgeVariant = (score) => {
     if (score >= 90) return 'success';

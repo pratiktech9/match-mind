@@ -4,11 +4,9 @@ import Navbar from './Navbar';
 import Header from './Header';
 
 const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
-  const [currentPageState, setCurrentPageState] = useState(currentPage || 'dashboard');
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
 
   const handleNavigate = (pageId) => {
-    setCurrentPageState(pageId);
     // In a real app with React Router, you would navigate here
     // For now, we'll just update the state and let parent handle the navigation
     if (window.onNavigate) {
@@ -27,6 +25,7 @@ const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
       clients: 'Clients',
       opportunities: 'Opportunities',
       matching: 'Matching',
+      notifications: 'Notifications',
       analytics: 'Analytics',
       settings: 'Settings'
     };
@@ -37,7 +36,7 @@ const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
     <div className={`layout d-flex ${isNavbarCollapsed ? 'sidebar-collapsed' : ''}`} style={{ height: '100vh', overflow: 'hidden' }}>
       <Navbar
         onNavigate={handleNavigate}
-        currentPage={currentPageState}
+        currentPage={currentPage}
         onToggle={handleNavbarToggle}
       />
 
@@ -48,7 +47,7 @@ const Layout = ({ children, currentPage, title, user, onSearch, onLogout }) => {
              minWidth: 0
            }}>
         <Header
-          title={getPageTitle(currentPageState)}
+          title={getPageTitle(currentPage)}
           user={user}
           onSearch={onSearch}
           onLogout={onLogout}

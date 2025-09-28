@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Row, Col, Card, Button, Badge, Spinner, Alert,
-  Modal, Form, Table
+  Modal
 } from 'react-bootstrap';
 
 const OpportunityDetail = ({ opportunityId, onNavigate }) => {
@@ -386,7 +386,7 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
                       <div className="text-muted">
                         <div className="mb-2" style={{ fontSize: '3rem' }}>🔍</div>
                         <h5>No Matches Found</h5>
-                        <p>We couldn't find any suitable engineers for this opportunity at the moment.</p>
+                        <p>We couldn&apos;t find any suitable engineers for this opportunity at the moment.</p>
                         <Button
                           variant="primary"
                           onClick={fetchMatches}
