@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Button, Spinner } from 'react-bootstrap';
 import Layout from './layout/Layout';
+import Dashboard from './pages/Dashboard';
 import EngineersList from './pages/EngineersList';
 import ClientsList from './pages/ClientsList';
 import OpportunitiesList from './pages/OpportunitiesList';
@@ -12,7 +13,7 @@ const EngineerDetail = React.lazy(() => import('./pages/EngineerDetail'));
 
 function App() {
   console.log('App component rendered');
-  const [currentPage, setCurrentPage] = useState('engineers');
+  const [currentPage, setCurrentPage] = useState('dashboard');
   const [opportunityId, setOpportunityId] = useState(null);
   const [clientFilter, setClientFilter] = useState(null);
   const [engineerId, setEngineerId] = useState(null);
@@ -73,7 +74,7 @@ function App() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <DashboardPlaceholder />;
+        return <Dashboard onNavigate={handleNavigate} />;
       case 'engineers':
         return <EngineersList searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'engineer-detail':
@@ -88,12 +89,8 @@ function App() {
         return <MatchingPage searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'notifications':
         return <NotificationsList searchQuery={searchQuery} onNavigate={handleNavigate} />;
-      case 'analytics':
-        return <AnalyticsPlaceholder />;
-      case 'settings':
-        return <SettingsPlaceholder />;
       default:
-        return <EngineersList searchQuery={searchQuery} onNavigate={handleNavigate} />;
+        return <Dashboard onNavigate={handleNavigate} />;
     }
   };
 
@@ -182,129 +179,6 @@ function App() {
   );
 }
 
-// Placeholder components for other pages
-const DashboardPlaceholder = () => (
-  <div className="page-placeholder">
-    <div className="placeholder-content">
-      <h2>🏠 Dashboard</h2>
-      <p>Dashboard page coming soon...</p>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Available Engineers</h3>
-          <div className="stat-number">15</div>
-                </div>
-        <div className="stat-card">
-          <h3>Rolling Off</h3>
-          <div className="stat-number">8</div>
-        </div>
-        <div className="stat-card">
-          <h3>On Bench</h3>
-          <div className="stat-number">3</div>
-        </div>
-        <div className="stat-card">
-          <h3>Open Opportunities</h3>
-          <div className="stat-number">12</div>
-        </div>
-      </div>
-              </div>
-    <style>{`
-      .page-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        text-align: center;
-        color: #6b7280;
-      }
 
-      .placeholder-content h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #374151;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-        width: 100%;
-        max-width: 800px;
-      }
-
-      .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
-
-      .stat-card h3 {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #6b7280;
-        margin-bottom: 0.5rem;
-      }
-
-      .stat-number {
-        font-size: 2.25rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-    `}</style>
-              </div>
-);
-
-
-
-const AnalyticsPlaceholder = () => (
-  <div className="page-placeholder">
-    <h2>📊 Analytics</h2>
-    <p>Analytics dashboard coming soon...</p>
-    <style>{`
-      .page-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        text-align: center;
-        color: #6b7280;
-      }
-
-      .page-placeholder h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #374151;
-      }
-    `}</style>
-            </div>
-);
-
-const SettingsPlaceholder = () => (
-  <div className="page-placeholder">
-    <h2>⚙️ Settings</h2>
-    <p>Settings page coming soon...</p>
-    <style>{`
-      .page-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        text-align: center;
-        color: #6b7280;
-      }
-
-      .page-placeholder h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #374151;
-      }
-    `}</style>
-  </div>
-);
 
 export default App;

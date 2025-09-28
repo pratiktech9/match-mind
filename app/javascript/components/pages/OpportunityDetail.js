@@ -14,13 +14,6 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
   const [selectedEngineer, setSelectedEngineer] = useState(null);
   const [matchCreating, setMatchCreating] = useState(false);
 
-  useEffect(() => {
-    if (opportunityId) {
-      fetchOpportunityDetails();
-      fetchMatches();
-    }
-  }, [opportunityId, fetchOpportunityDetails, fetchMatches]);
-
   const fetchOpportunityDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -59,6 +52,13 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
       setMatchesLoading(false);
     }
   }, [opportunityId]);
+
+  useEffect(() => {
+    if (opportunityId) {
+      fetchOpportunityDetails();
+      fetchMatches();
+    }
+  }, [opportunityId, fetchOpportunityDetails, fetchMatches]);
 
   const handleBackToList = () => {
     onNavigate('opportunities');
@@ -204,16 +204,6 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
                         </Badge>
                       </div>
                     </div>
-                  </div>
-                </Col>
-                <Col xs="auto">
-                  <div className="d-flex gap-2">
-                    <Button variant="outline-warning" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="outline-secondary" size="sm">
-                      Close
-                    </Button>
                   </div>
                 </Col>
               </Row>
