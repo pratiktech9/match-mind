@@ -94,9 +94,9 @@ class Engineer < ApplicationRecord
   private
 
   def create_availability_change_notification
-    old_status = saved_changes['status'][0]
-    new_status = saved_changes['status'][1]
-    
+    old_status = saved_changes["status"][0]
+    new_status = saved_changes["status"][1]
+
     # Only create notification if status actually changed
     if old_status != new_status
       Notification.create_availability_change_notification(self, old_status, new_status)

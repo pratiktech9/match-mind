@@ -1,5 +1,5 @@
 class Api::V1::NotificationsController < Api::V1::ApplicationController
-  before_action :set_notification, only: [:show, :update, :destroy]
+  before_action :set_notification, only: [ :show, :update, :destroy ]
 
   # GET /api/v1/notifications
   def index
@@ -18,8 +18,8 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
 
     case sort_by
     when "priority"
-      priority_order = { 'urgent' => 4, 'high' => 3, 'medium' => 2, 'low' => 1 }
-      @notifications = @notifications.sort_by { |n| [priority_order[n.priority] || 0, n.created_at] }
+      priority_order = { "urgent" => 4, "high" => 3, "medium" => 2, "low" => 1 }
+      @notifications = @notifications.sort_by { |n| [ priority_order[n.priority] || 0, n.created_at ] }
       @notifications = @notifications.reverse if sort_order == "desc"
     when "created_at"
       @notifications = @notifications.order(created_at: sort_order)
@@ -30,7 +30,7 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
     # Pagination
     page = params[:page]&.to_i || 1
     per_page = params[:per_page]&.to_i || 20
-    per_page = [per_page, 50].min # Max 50 per page
+    per_page = [ per_page, 50 ].min # Max 50 per page
 
     @notifications = @notifications.page(page).per(per_page)
 
@@ -54,13 +54,13 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
   # PATCH/PUT /api/v1/notifications/:id
   def update
     if @notification.update(notification_params)
-      render json: { 
-        data: notification_json(@notification), 
-        message: "Notification updated successfully" 
+      render json: {
+        data: notification_json(@notification),
+        message: "Notification updated successfully"
       }
     else
-      render json: { 
-        error: @notification.errors.full_messages.join(", ") 
+      render json: {
+        error: @notification.errors.full_messages.join(", ")
       }, status: :unprocessable_entity
     end
   end
@@ -74,35 +74,35 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
   # PATCH /api/v1/notifications/:id/mark_read
   def mark_read
     @notification.mark_as_read!
-    render json: { 
-      data: notification_json(@notification), 
-      message: "Notification marked as read" 
+    render json: {
+      data: notification_json(@notification),
+      message: "Notification marked as read"
     }
   end
 
   # PATCH /api/v1/notifications/:id/mark_unread
   def mark_unread
     @notification.mark_as_unread!
-    render json: { 
-      data: notification_json(@notification), 
-      message: "Notification marked as unread" 
+    render json: {
+      data: notification_json(@notification),
+      message: "Notification marked as unread"
     }
   end
 
   # PATCH /api/v1/notifications/:id/archive
   def archive
     @notification.archive!
-    render json: { 
-      data: notification_json(@notification), 
-      message: "Notification archived" 
+    render json: {
+      data: notification_json(@notification),
+      message: "Notification archived"
     }
   end
 
   # PATCH /api/v1/notifications/mark_all_read
   def mark_all_read
-    updated_count = Notification.unread.update_all(status: 'read', read_at: Time.current)
-    render json: { 
-      message: "#{updated_count} notifications marked as read" 
+    updated_count = Notification.unread.update_all(status: "read", read_at: Time.current)
+    render json: {
+      message: "#{updated_count} notifications marked as read"
     }
   end
 
@@ -113,17 +113,17 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
       unread: Notification.unread.count,
       by_priority: {
         urgent: Notification.urgent.unread.count,
-        high: Notification.by_priority('high').unread.count,
-        medium: Notification.by_priority('medium').unread.count,
-        low: Notification.by_priority('low').unread.count
+        high: Notification.by_priority("high").unread.count,
+        medium: Notification.by_priority("medium").unread.count,
+        low: Notification.by_priority("low").unread.count
       },
       by_type: {
-        rolling_off_soon: Notification.by_type('rolling_off_soon').unread.count,
-        potential_match: Notification.by_type('potential_match').unread.count,
-        new_opportunity: Notification.by_type('new_opportunity').unread.count,
-        skill_gap: Notification.by_type('skill_gap').unread.count,
-        budget_mismatch: Notification.by_type('budget_mismatch').unread.count,
-        availability_change: Notification.by_type('availability_change').unread.count
+        rolling_off_soon: Notification.by_type("rolling_off_soon").unread.count,
+        potential_match: Notification.by_type("potential_match").unread.count,
+        new_opportunity: Notification.by_type("new_opportunity").unread.count,
+        skill_gap: Notification.by_type("skill_gap").unread.count,
+        budget_mismatch: Notification.by_type("budget_mismatch").unread.count,
+        availability_change: Notification.by_type("availability_change").unread.count
       },
       recent: Notification.recent.limit(5).map { |n| notification_json(n) }
     }
@@ -134,8 +134,8 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
   # POST /api/v1/notifications/generate_insights
   def generate_insights
     InsightsJob.perform_later
-    render json: { 
-      message: "Insights generation started. Check back in a few minutes for new notifications." 
+    render json: {
+      message: "Insights generation started. Check back in a few minutes for new notifications."
     }
   end
 
