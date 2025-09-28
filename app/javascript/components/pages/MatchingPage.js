@@ -21,6 +21,9 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState(null);
+  const [matchingInProgress, setMatchingInProgress] = useState(false);
+  const [recentMatches, setRecentMatches] = useState([]);
+  const [pollingInterval, setPollingInterval] = useState(null);
 
   const itemsPerPage = 20;
 
@@ -69,15 +72,15 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       setLoading(false);
       setDataLoading(false);
     }
-  }, [currentPage, filterString, searchQuery, matches.length]);
+  }, [currentPage, searchQuery, matches.length, filters]);
 
   // Debounced version of fetchMatches for filter changes
   const debouncedFetchMatches = useCallback(() => {
     if (debounceTimer) {
-      clearTimeout(debounceTimer);
+      window.clearTimeout(debounceTimer);
     }
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       fetchMatches();
     }, 300); // 300ms delay
 
@@ -86,22 +89,25 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
 
   useEffect(() => {
     fetchMatches();
-  }, [currentPage, searchQuery]); // Only immediate fetch for page/search changes
+  }, [currentPage, searchQuery, fetchMatches]); // Only immediate fetch for page/search changes
 
   useEffect(() => {
     if (filterString !== '{}') { // Only debounce when filters actually exist
       debouncedFetchMatches();
     }
-  }, [filterString]); // Debounced fetch for filter changes
+  }, [filterString, debouncedFetchMatches]); // Debounced fetch for filter changes
 
-  // Cleanup debounce timer on unmount
+  // Cleanup debounce timer and polling on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer) {
-        clearTimeout(debounceTimer);
+        window.clearTimeout(debounceTimer);
+      }
+      if (pollingInterval) {
+        window.clearInterval(pollingInterval);
       }
     };
-  }, [debounceTimer]);
+  }, [debounceTimer, pollingInterval]);
 
   const handleFilterChange = useCallback((key, value) => {
     if (key === 'batch') {
@@ -114,6 +120,83 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       setCurrentPage(1);
     }
   }, []);
+
+  const fetchRecentMatches = useCallback(async () => {
+    try {
+      const response = await fetch('/api/matches/recent');
+      if (response.ok) {
+        const data = await response.json();
+        const newMatches = data.matches || [];
+        setRecentMatches(newMatches);
+        
+        // Merge recent matches into the main table
+        if (newMatches.length > 0) {
+          setMatches(prevMatches => {
+            // Create a map of existing matches by ID to avoid duplicates
+            const existingMatchIds = new Set(prevMatches.map(match => match.id));
+            
+            // Convert recent matches to the same format as main matches
+            const formattedRecentMatches = newMatches
+              .filter(match => !existingMatchIds.has(match.id))
+              .map(match => ({
+                id: match.id,
+                engineer: {
+                  id: match.engineer.id,
+                  name: match.engineer.name,
+                  country: match.engineer.country,
+                  status: match.engineer.status
+                },
+                client: {
+                  name: match.opportunity.client
+                },
+                opportunity: {
+                  id: match.opportunity.id,
+                  title: match.opportunity.title,
+                  job_role: 'Developer' // Default role
+                },
+                score: match.score,
+                status: match.status,
+                matched_at: match.created_at,
+                created_at: match.created_at,
+                updated_at: match.created_at
+              }));
+            
+            // Combine and sort by creation time (newest first)
+            const combinedMatches = [...formattedRecentMatches, ...prevMatches]
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            return combinedMatches;
+          });
+          
+          // Update total count
+          setTotalCount(prev => prev + newMatches.length);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching recent matches:', err);
+    }
+  }, []);
+
+  const startPolling = useCallback(() => {
+    // Clear any existing polling
+    if (pollingInterval) {
+      window.clearInterval(pollingInterval);
+    }
+
+    // Start polling every 2 seconds
+    const interval = window.setInterval(() => {
+      fetchRecentMatches();
+    }, 2000);
+
+    setPollingInterval(interval);
+  }, [pollingInterval, fetchRecentMatches]);
+
+  const stopPolling = useCallback(() => {
+    if (pollingInterval) {
+      window.clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [pollingInterval]);
 
   const handleTriggerMatching = async (opportunityId = null) => {
     setTriggering(true);
@@ -133,16 +216,19 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      await response.json();
 
-      // Show success message
+      // Show success message and start real-time updates
       setShowTriggerModal(false);
-      alert(data.message + '. The matching process is running in the background.');
+      setMatchingInProgress(true);
+      startPolling();
 
-      // Refresh matches after a short delay
+      // Stop polling after 5 minutes
       window.setTimeout(() => {
-        fetchMatches();
-      }, 2000);
+        stopPolling();
+        setMatchingInProgress(false);
+        fetchMatches(); // Final refresh
+      }, 5 * 60 * 1000);
 
     } catch (err) {
       console.error('Error triggering matching:', err);
@@ -241,6 +327,12 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                   <h4 className="mb-0">⚡ AI Matching Center</h4>
                   <small className="text-muted">
                     {totalCount} match{totalCount !== 1 ? 'es' : ''} found
+                    {matchingInProgress && (
+                      <span className="text-success ms-2">
+                        <Spinner animation="border" size="sm" className="me-1" />
+                        Matching in progress... ({recentMatches.length} new)
+                      </span>
+                    )}
                   </small>
                 </Col>
                 <Col xs="auto">
@@ -248,7 +340,7 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                     variant="primary"
                     size="sm"
                     onClick={() => setShowTriggerModal(true)}
-                    disabled={triggering}
+                    disabled={triggering || matchingInProgress}
                   >
                     {triggering ? (
                       <>
@@ -264,6 +356,54 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
             </Card.Header>
 
             <Card.Body className="p-0">
+              {/* Real-time Matching Progress */}
+              {matchingInProgress && (
+                <div className="p-3 bg-success bg-opacity-10 border-bottom">
+                  <Row className="align-items-center">
+                    <Col>
+                      <h6 className="mb-1 text-success">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        Live Matching Results
+                      </h6>
+                      <small className="text-muted">
+                        {recentMatches.length} new match{recentMatches.length !== 1 ? 'es' : ''} found in the last 5 minutes
+                        {recentMatches.length > 0 && ' - Check the table below for details'}
+                      </small>
+                    </Col>
+                    <Col xs="auto">
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={() => {
+                          stopPolling();
+                          setMatchingInProgress(false);
+                          fetchMatches(); // Full refresh to get all data
+                        }}
+                      >
+                        Stop & Refresh
+                      </Button>
+                    </Col>
+                  </Row>
+                  {recentMatches.length > 0 && (
+                    <div className="mt-2">
+                      <small className="text-muted">Latest matches:</small>
+                      <div className="mt-1">
+                        {recentMatches.slice(0, 3).map((match) => (
+                          <Badge key={match.id} bg="success" className="me-2 mb-1">
+                            {match.engineer.name} → {match.opportunity.title} ({Math.round(match.score)}%)
+                          </Badge>
+                        ))}
+                        {recentMatches.length > 3 && (
+                          <Badge bg="secondary" className="me-2 mb-1">
+                            +{recentMatches.length - 3} more...
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Filters Section */}
               <FilterSection filters={filters} onFilterChange={handleFilterChange} />
 
@@ -473,9 +613,15 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
             <ul className="mb-0">
               <li>Analyzes all active opportunities</li>
               <li>Matches them with available engineers</li>
-              <li>Calculates compatibility scores</li>
-              <li>Updates the matches database</li>
+              <li>Calculates compatibility scores using AI</li>
+              <li>Updates the matches database in real-time</li>
             </ul>
+          </div>
+          <div className="bg-info bg-opacity-10 p-3 rounded mt-3">
+            <h6 className="text-info">✨ New Feature:</h6>
+            <p className="mb-0 small">
+              You&apos;ll see matches appear in real-time as they&apos;re processed. No more waiting for the entire process to complete!
+            </p>
           </div>
         </Modal.Body>
         <Modal.Footer>

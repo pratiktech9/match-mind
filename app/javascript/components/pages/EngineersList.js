@@ -89,15 +89,15 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       setLoading(false);
       setDataLoading(false);
     }
-  }, [currentPage, filterString, sortBy, sortOrder, searchQuery, engineers.length]);
+  }, [currentPage, sortBy, sortOrder, searchQuery, engineers.length, filters]);
 
   // Debounced version of fetchEngineers for filter changes
   const debouncedFetchEngineers = useCallback(() => {
     if (debounceTimer) {
-      clearTimeout(debounceTimer);
+      window.clearTimeout(debounceTimer);
     }
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       fetchEngineers();
     }, 300); // 300ms delay
 
@@ -107,19 +107,19 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   // Fetch engineers data with different strategies
   useEffect(() => {
     fetchEngineers();
-  }, [currentPage, sortBy, sortOrder, searchQuery]); // Immediate fetch for pagination, sorting, search
+  }, [currentPage, sortBy, sortOrder, searchQuery, fetchEngineers]); // Immediate fetch for pagination, sorting, search
 
   useEffect(() => {
     if (filterString !== JSON.stringify({status:'',skills:'',availability:'',experience:''})) {
       debouncedFetchEngineers();
     }
-  }, [filterString]); // Debounced fetch for filter changes
+  }, [filterString, debouncedFetchEngineers]); // Debounced fetch for filter changes
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer) {
-        clearTimeout(debounceTimer);
+        window.clearTimeout(debounceTimer);
       }
     };
   }, [debounceTimer]);
