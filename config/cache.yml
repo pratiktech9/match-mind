@@ -12,5 +12,5 @@ test:
   <<: *default
 
 production:
-  database: cache
   <<: *default
+  # Use Redis for caching in production instead of separate database
