@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Row, Col, Card, Badge, Button, Table,
+  Container, Row, Col, Card, Badge, Button,
   Spinner, Alert, ProgressBar
 } from 'react-bootstrap';
 
@@ -158,7 +158,7 @@ const Dashboard = ({ onNavigate }) => {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 className="mb-1">🏠 Dashboard</h2>
-              <p className="text-muted mb-0">Welcome back! Here's your overview</p>
+              <p className="text-muted mb-0">Welcome back! Here&apos;s your overview</p>
             </div>
             <Button variant="primary" size="sm" onClick={() => onNavigate('matching')}>
               🔍 Smart Match
@@ -250,7 +250,7 @@ const Dashboard = ({ onNavigate }) => {
             </div>
             {urgentMatches.length > 0 ? (
               <Row>
-                {urgentMatches.map((match, index) => (
+                {urgentMatches.map((match) => (
                   <Col key={match.id} lg={4} md={6} className="mb-3">
                     <Card className="h-100 border-0 shadow-sm">
                       <Card.Body>

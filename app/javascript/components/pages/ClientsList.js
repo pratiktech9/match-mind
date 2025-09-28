@@ -74,15 +74,15 @@ const ClientsList = ({ searchQuery = '', onNavigate }) => {
       setLoading(false);
       setDataLoading(false);
     }
-  }, [currentPage, filterString, sortBy, sortOrder, searchQuery, clients.length]);
+  }, [currentPage, sortBy, sortOrder, searchQuery, clients.length, filters]);
 
   // Debounced version of fetchClients for filter changes
   const debouncedFetchClients = useCallback(() => {
     if (debounceTimer) {
-      clearTimeout(debounceTimer);
+      window.clearTimeout(debounceTimer);
     }
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       fetchClients();
     }, 300); // 300ms delay
 
@@ -92,19 +92,19 @@ const ClientsList = ({ searchQuery = '', onNavigate }) => {
   // Fetch clients data with different strategies
   useEffect(() => {
     fetchClients();
-  }, [currentPage, sortBy, sortOrder, searchQuery]); // Immediate fetch for pagination, sorting, search
+  }, [currentPage, sortBy, sortOrder, searchQuery, fetchClients]); // Immediate fetch for pagination, sorting, search
 
   useEffect(() => {
     if (filterString !== JSON.stringify({industry:'',status:''})) {
       debouncedFetchClients();
     }
-  }, [filterString]); // Debounced fetch for filter changes
+  }, [filterString, debouncedFetchClients]); // Debounced fetch for filter changes
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer) {
-        clearTimeout(debounceTimer);
+        window.clearTimeout(debounceTimer);
       }
     };
   }, [debounceTimer]);

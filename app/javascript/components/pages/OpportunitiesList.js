@@ -87,15 +87,15 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
       setLoading(false);
       setDataLoading(false);
     }
-  }, [currentPage, filterString, sortBy, sortOrder, searchQuery, opportunities.length]);
+  }, [currentPage, sortBy, sortOrder, searchQuery, opportunities.length, filters]);
 
   // Debounced version of fetchOpportunities for filter changes
   const debouncedFetchOpportunities = useCallback(() => {
     if (debounceTimer) {
-      clearTimeout(debounceTimer);
+      window.clearTimeout(debounceTimer);
     }
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       fetchOpportunities();
     }, 300); // 300ms delay
 
@@ -105,19 +105,19 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
   // Fetch data with different strategies
   useEffect(() => {
     fetchOpportunities();
-  }, [currentPage, sortBy, sortOrder, searchQuery]); // Immediate fetch for pagination, sorting, search
+  }, [currentPage, sortBy, sortOrder, searchQuery, fetchOpportunities]); // Immediate fetch for pagination, sorting, search
 
   useEffect(() => {
     if (filterString !== JSON.stringify({status:'',client_id:'',priority:'',skills:''})) {
       debouncedFetchOpportunities();
     }
-  }, [filterString]); // Debounced fetch for filter changes
+  }, [filterString, debouncedFetchOpportunities]); // Debounced fetch for filter changes
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer) {
-        clearTimeout(debounceTimer);
+        window.clearTimeout(debounceTimer);
       }
     };
   }, [debounceTimer]);

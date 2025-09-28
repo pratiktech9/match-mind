@@ -59,6 +59,7 @@ Rails.application.routes.draw do
     get "matches", to: "matching#index"
     post "matching/trigger", to: "matching#trigger_matching"
     patch "matches/:id/status", to: "matching#update_match_status"
+    get "matches/recent", to: "matching#get_recent_matches"
   end
 
   # Defines the root path route ("/")

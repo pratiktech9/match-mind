@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import {
   Nav,
-  Button,
-  ListGroup
+  Button
 } from 'react-bootstrap';
 
 const Navbar = ({ onNavigate, currentPage, onToggle }) => {

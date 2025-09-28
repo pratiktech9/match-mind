@@ -35,28 +35,18 @@ class Api::MatchingController < ApplicationController
   def trigger_matching
     if params[:opportunity_id].present?
       # Trigger matching for specific opportunity
-      if Rails.env.development?
-        MatchingJob.perform_now(params[:opportunity_id])
-        message = "Matching completed for specific opportunity"
-      else
-        MatchingJob.perform_later(params[:opportunity_id])
-        message = "Matching triggered for specific opportunity"
-      end
+      job = MatchingJob.perform_later(params[:opportunity_id])
+      message = "Matching triggered for specific opportunity"
     else
       # Trigger matching for all active opportunities
-      if Rails.env.development?
-        MatchingJob.perform_now
-        message = "Matching completed for all active opportunities"
-      else
-        MatchingJob.perform_later
-        message = "Matching triggered for all active opportunities"
-      end
+      job = MatchingJob.perform_later
+      message = "Matching triggered for all active opportunities"
     end
 
     render json: {
       success: true,
       message: message,
-      job_id: "completed"
+      job_id: job.job_id
     }
   end
 
@@ -130,6 +120,37 @@ class Api::MatchingController < ApplicationController
         error: match.errors.full_messages.join(", ")
       }, status: :unprocessable_entity
     end
+  end
+
+  def get_recent_matches
+    # Get matches created in the last 5 minutes
+    recent_matches = Match.includes(:engineer, :client_opportunity, :client)
+                         .where("created_at > ?", 5.minutes.ago)
+                         .order(created_at: :desc)
+                         .limit(50)
+
+    render json: {
+      success: true,
+      matches: recent_matches.map do |match|
+        {
+          id: match.id,
+          engineer: {
+            id: match.engineer.id,
+            name: match.engineer.name,
+            country: match.engineer.country,
+            status: match.engineer.status
+          },
+          opportunity: {
+            id: match.client_opportunity.id,
+            title: match.client_opportunity.title,
+            client: match.client.name
+          },
+          score: match.score,
+          status: match.status,
+          created_at: match.created_at
+        }
+      end
+    }
   end
 
   private
