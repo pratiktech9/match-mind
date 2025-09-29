@@ -78,12 +78,12 @@ class EngineerStatusUpdateJob < ApplicationJob
     # - Engineer becomes available (can be assigned to projects)
     # - Engineer starts rolling off soon (might need replacement)
     significant_transitions = [
-      ["on_project", "rolling_off_soon"],
-      ["on_project", "available"],
-      ["rolling_off_soon", "available"]
+      [ "on_project", "rolling_off_soon" ],
+      [ "on_project", "available" ],
+      [ "rolling_off_soon", "available" ]
     ]
 
-    significant_transitions.include?([old_status, new_status])
+    significant_transitions.include?([ old_status, new_status ])
   end
 
   def create_engineer_notification(engineer, old_status, new_status)
@@ -91,13 +91,13 @@ class EngineerStatusUpdateJob < ApplicationJob
 
     begin
       title = case new_status
-              when "available"
+      when "available"
                 "Engineer Now Available"
-              when "rolling_off_soon"
+      when "rolling_off_soon"
                 "Engineer Rolling Off Soon"
-              else
+      else
                 "Engineer Status Updated"
-              end
+      end
 
       message = "#{engineer.name} status changed from #{old_status.humanize} to #{new_status.humanize}."
 

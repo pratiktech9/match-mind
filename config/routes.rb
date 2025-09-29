@@ -67,14 +67,14 @@ Rails.application.routes.draw do
   end
 
   # MCP Server endpoint
-  post '/mcp', to: 'mcp#handle_request'
+  post "/mcp", to: "mcp#handle_request"
 
   # MCP-compatible API endpoints (optional alternative)
   namespace :mcp_api do
-    post 'matches/find_for_opportunity', to: 'mcp#handle_request'
-    post 'matches/find_for_engineer', to: 'mcp#handle_request'
-    post 'matches/create', to: 'mcp#handle_request'
-    post 'matching/trigger', to: 'mcp#handle_request'
+    post "matches/find_for_opportunity", to: "mcp#handle_request"
+    post "matches/find_for_engineer", to: "mcp#handle_request"
+    post "matches/create", to: "mcp#handle_request"
+    post "matching/trigger", to: "mcp#handle_request"
   end
 
   # Defines the root path route ("/")

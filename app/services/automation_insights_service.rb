@@ -4,7 +4,7 @@ class AutomationInsightsService
 
     # Get matches from the specified period
     recent_matches = Match.includes(:engineer, :client_opportunity, :client)
-                         .where('created_at > ?', start_date)
+                         .where("created_at > ?", start_date)
 
     # Calculate insights
     insights = {
@@ -23,7 +23,7 @@ class AutomationInsightsService
   def self.generate_summary(matches, days)
     total_matches = matches.count
     avg_score = matches.average(:score)&.round(1) || 0
-    high_score_matches = matches.where('score >= 85').count
+    high_score_matches = matches.where("score >= 85").count
 
     {
       total_matches: total_matches,
@@ -47,7 +47,7 @@ class AutomationInsightsService
     # Calculate trend
     recent_avg = daily_counts.last(3).sum / 3.0
     earlier_avg = daily_counts.first(3).sum / 3.0
-    trend = recent_avg > earlier_avg ? 'increasing' : (recent_avg < earlier_avg ? 'decreasing' : 'stable')
+    trend = recent_avg > earlier_avg ? "increasing" : (recent_avg < earlier_avg ? "decreasing" : "stable")
 
     {
       daily_counts: daily_counts,
@@ -60,14 +60,14 @@ class AutomationInsightsService
     recommendations = []
 
     # Analyze match scores
-    low_score_matches = matches.where('score < 70').count
+    low_score_matches = matches.where("score < 70").count
     total_matches = matches.count
 
     if total_matches > 0 && (low_score_matches.to_f / total_matches) > 0.3
       recommendations << {
-        type: 'quality_improvement',
-        priority: 'high',
-        message: 'High percentage of low-score matches. Consider refining skill requirements or expanding talent pool.'
+        type: "quality_improvement",
+        priority: "high",
+        message: "High percentage of low-score matches. Consider refining skill requirements or expanding talent pool."
       }
     end
 
@@ -79,8 +79,8 @@ class AutomationInsightsService
 
     if unmatched_opportunities > 5
       recommendations << {
-        type: 'coverage',
-        priority: 'medium',
+        type: "coverage",
+        priority: "medium",
         message: "#{unmatched_opportunities} opportunities have no matches. Consider running additional matching cycles."
       }
     end
@@ -88,7 +88,7 @@ class AutomationInsightsService
     # Analyze skill gaps
     top_opportunity_skills = ClientOpportunity.active
                                              .joins(:skills)
-                                             .group('skills.name')
+                                             .group("skills.name")
                                              .count
                                              .sort_by { |_, count| -count }
                                              .first(5)
@@ -96,7 +96,7 @@ class AutomationInsightsService
 
     available_engineer_skills = Engineer.available
                                        .joins(:skills)
-                                       .group('skills.name')
+                                       .group("skills.name")
                                        .count
 
     skill_gaps = top_opportunity_skills.select do |skill, opp_count|
@@ -106,8 +106,8 @@ class AutomationInsightsService
 
     if skill_gaps.any?
       recommendations << {
-        type: 'skill_gap',
-        priority: 'high',
+        type: "skill_gap",
+        priority: "high",
         message: "Skill gaps detected in: #{skill_gaps.keys.join(', ')}. Consider training or hiring."
       }
     end
@@ -118,7 +118,7 @@ class AutomationInsightsService
   def self.analyze_top_skills(matches)
     # Get skills from matched engineers
     skill_counts = matches.joins(engineer: :skills)
-                         .group('skills.name')
+                         .group("skills.name")
                          .count
                          .sort_by { |_, count| -count }
                          .first(10)
@@ -139,11 +139,11 @@ class AutomationInsightsService
     return { ranges: [], distribution: [] } if matches.empty?
 
     score_ranges = [
-      { range: '90-100', min: 90, max: 100 },
-      { range: '80-89', min: 80, max: 89 },
-      { range: '70-79', min: 70, max: 79 },
-      { range: '60-69', min: 60, max: 69 },
-      { range: '0-59', min: 0, max: 59 }
+      { range: "90-100", min: 90, max: 100 },
+      { range: "80-89", min: 80, max: 89 },
+      { range: "70-79", min: 70, max: 79 },
+      { range: "60-69", min: 60, max: 69 },
+      { range: "0-59", min: 0, max: 59 }
     ]
 
     total_matches = matches.count

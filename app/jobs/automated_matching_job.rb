@@ -8,11 +8,11 @@ class AutomatedMatchingJob < ApplicationJob
     @mcp_server = McpServer.new
 
     config = automation_config.with_defaults({
-      'min_score' => 75,
-      'max_matches_per_opportunity' => 5,
-      'auto_create_high_score' => true,
-      'high_score_threshold' => 85,
-      'send_notifications' => true
+      "min_score" => 75,
+      "max_matches_per_opportunity" => 5,
+      "auto_create_high_score" => true,
+      "high_score_threshold" => 85,
+      "send_notifications" => true
     })
 
     begin
@@ -22,13 +22,13 @@ class AutomatedMatchingJob < ApplicationJob
 
       # Step 2: Auto-create high-score matches using MCP Server
       matches_created = 0
-      if config['auto_create_high_score']
+      if config["auto_create_high_score"]
         matches_created = auto_create_matches_via_mcp(config)
       end
 
       # Step 3: Generate insights using MCP Server
       insights_generated = 0
-      if config['send_notifications']
+      if config["send_notifications"]
         insights_generated = generate_insights_via_mcp
       end
 
@@ -54,10 +54,10 @@ class AutomatedMatchingJob < ApplicationJob
 
   def get_automation_status
     request = {
-      'method' => 'tools/call',
-      'params' => {
-        'name' => 'get_automation_status',
-        'arguments' => {}
+      "method" => "tools/call",
+      "params" => {
+        "name" => "get_automation_status",
+        "arguments" => {}
       }
     }
 
@@ -70,12 +70,12 @@ class AutomatedMatchingJob < ApplicationJob
 
   def auto_create_matches_via_mcp(config)
     request = {
-      'method' => 'tools/call',
-      'params' => {
-        'name' => 'auto_create_high_score_matches',
-        'arguments' => {
-          'min_score' => config['high_score_threshold'],
-          'max_matches' => config['max_matches_per_opportunity'] * 10 # Allow more matches across all opportunities
+      "method" => "tools/call",
+      "params" => {
+        "name" => "auto_create_high_score_matches",
+        "arguments" => {
+          "min_score" => config["high_score_threshold"],
+          "max_matches" => config["max_matches_per_opportunity"] * 10 # Allow more matches across all opportunities
         }
       }
     }
@@ -103,11 +103,11 @@ class AutomatedMatchingJob < ApplicationJob
 
   def generate_insights_via_mcp
     request = {
-      'method' => 'tools/call',
-      'params' => {
-        'name' => 'get_match_insights',
-        'arguments' => {
-          'days' => 1 # Get insights for last 24 hours
+      "method" => "tools/call",
+      "params" => {
+        "name" => "get_match_insights",
+        "arguments" => {
+          "days" => 1 # Get insights for last 24 hours
         }
       }
     }
@@ -133,10 +133,10 @@ class AutomatedMatchingJob < ApplicationJob
 
   def trigger_matching_via_mcp
     request = {
-      'method' => 'tools/call',
-      'params' => {
-        'name' => 'trigger_matching',
-        'arguments' => {} # Trigger for all opportunities
+      "method" => "tools/call",
+      "params" => {
+        "name" => "trigger_matching",
+        "arguments" => {} # Trigger for all opportunities
       }
     }
 

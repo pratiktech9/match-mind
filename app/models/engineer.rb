@@ -4,7 +4,7 @@ class Engineer < ApplicationRecord
   has_many :skills, through: :engineer_skills
   has_many :matches, dependent: :destroy
   has_many :clients, through: :matches
-  belongs_to :current_client, class_name: 'Client', optional: true
+  belongs_to :current_client, class_name: "Client", optional: true
 
   # Validations
   validates :name, presence: true
@@ -121,22 +121,22 @@ class Engineer < ApplicationRecord
     if current_client_id_val.present?
       # Check if they're rolling off soon (notice given and within 30 days)
       if notice_date_val.present? && notice_date_val >= today && notice_date_val <= today + 30.days
-        return "rolling_off_soon"
+        "rolling_off_soon"
       # Check if project is ending soon (expected end date within 30 days)
       elsif expected_end_date_val.present? && expected_end_date_val >= today && expected_end_date_val <= today + 30.days
-        return "rolling_off_soon"
+        "rolling_off_soon"
       else
         # Currently working on project
-        return "on_project"
+        "on_project"
       end
     else
       # No current client - check if they're returning from a break
       if return_date_val.present? && return_date_val > today
         # Still on break, will return in future
-        return "on_project" # Consider them unavailable until return date
+        "on_project" # Consider them unavailable until return date
       else
         # Available for new projects
-        return "available"
+        "available"
       end
     end
   end

@@ -1,196 +1,196 @@
-require 'json'
+require "json"
 
 class McpServer
   def initialize
     @tools = {
-      'find_matches_for_opportunity' => {
-        name: 'find_matches_for_opportunity',
-        description: 'Find matching engineers for a given opportunity',
+      "find_matches_for_opportunity" => {
+        name: "find_matches_for_opportunity",
+        description: "Find matching engineers for a given opportunity",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             opportunity_id: {
-              type: 'integer',
-              description: 'The ID of the opportunity to find matches for'
+              type: "integer",
+              description: "The ID of the opportunity to find matches for"
             }
           },
-          required: ['opportunity_id']
+          required: [ "opportunity_id" ]
         }
       },
-      'find_matches_for_engineer' => {
-        name: 'find_matches_for_engineer',
-        description: 'Find matching opportunities for a given engineer',
+      "find_matches_for_engineer" => {
+        name: "find_matches_for_engineer",
+        description: "Find matching opportunities for a given engineer",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             engineer_id: {
-              type: 'integer',
-              description: 'The ID of the engineer to find matches for'
+              type: "integer",
+              description: "The ID of the engineer to find matches for"
             }
           },
-          required: ['engineer_id']
+          required: [ "engineer_id" ]
         }
       },
-      'create_match' => {
-        name: 'create_match',
-        description: 'Create a match between an engineer and opportunity',
+      "create_match" => {
+        name: "create_match",
+        description: "Create a match between an engineer and opportunity",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             engineer_id: {
-              type: 'integer',
-              description: 'The ID of the engineer'
+              type: "integer",
+              description: "The ID of the engineer"
             },
             opportunity_id: {
-              type: 'integer',
-              description: 'The ID of the opportunity'
+              type: "integer",
+              description: "The ID of the opportunity"
             }
           },
-          required: ['engineer_id', 'opportunity_id']
+          required: [ "engineer_id", "opportunity_id" ]
         }
       },
-      'trigger_matching' => {
-        name: 'trigger_matching',
-        description: 'Trigger the AI matching process for all or specific opportunities',
+      "trigger_matching" => {
+        name: "trigger_matching",
+        description: "Trigger the AI matching process for all or specific opportunities",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             opportunity_id: {
-              type: 'integer',
-              description: 'Optional: ID of specific opportunity to match'
+              type: "integer",
+              description: "Optional: ID of specific opportunity to match"
             }
           }
         }
       },
-      'get_automation_status' => {
-        name: 'get_automation_status',
-        description: 'Get the current status of automation jobs and scheduled tasks',
+      "get_automation_status" => {
+        name: "get_automation_status",
+        description: "Get the current status of automation jobs and scheduled tasks",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {}
         }
       },
-      'schedule_regular_matching' => {
-        name: 'schedule_regular_matching',
-        description: 'Schedule regular automated matching checks',
+      "schedule_regular_matching" => {
+        name: "schedule_regular_matching",
+        description: "Schedule regular automated matching checks",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             frequency: {
-              type: 'string',
-              description: 'Frequency: hourly, daily, weekly',
-              enum: ['hourly', 'daily', 'weekly']
+              type: "string",
+              description: "Frequency: hourly, daily, weekly",
+              enum: [ "hourly", "daily", "weekly" ]
             },
             enabled: {
-              type: 'boolean',
-              description: 'Enable or disable the automation'
+              type: "boolean",
+              description: "Enable or disable the automation"
             }
           },
-          required: ['frequency', 'enabled']
+          required: [ "frequency", "enabled" ]
         }
       },
-      'get_match_insights' => {
-        name: 'get_match_insights',
-        description: 'Get AI-powered insights about matching patterns and recommendations',
+      "get_match_insights" => {
+        name: "get_match_insights",
+        description: "Get AI-powered insights about matching patterns and recommendations",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             days: {
-              type: 'integer',
-              description: 'Number of days to analyze (default: 7)'
+              type: "integer",
+              description: "Number of days to analyze (default: 7)"
             }
           }
         }
       },
-      'auto_create_high_score_matches' => {
-        name: 'auto_create_high_score_matches',
-        description: 'Automatically create matches for high-scoring engineer-opportunity pairs',
+      "auto_create_high_score_matches" => {
+        name: "auto_create_high_score_matches",
+        description: "Automatically create matches for high-scoring engineer-opportunity pairs",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             min_score: {
-              type: 'integer',
-              description: 'Minimum score to auto-create matches (default: 85)'
+              type: "integer",
+              description: "Minimum score to auto-create matches (default: 85)"
             },
             max_matches: {
-              type: 'integer',
-              description: 'Maximum number of matches to create (default: 10)'
+              type: "integer",
+              description: "Maximum number of matches to create (default: 10)"
             }
           }
         }
       },
-      'run_automation_cycle' => {
-        name: 'run_automation_cycle',
-        description: 'Run a complete automation cycle including matching, insights, and notifications',
+      "run_automation_cycle" => {
+        name: "run_automation_cycle",
+        description: "Run a complete automation cycle including matching, insights, and notifications",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             min_score: {
-              type: 'integer',
-              description: 'Minimum score for matches (default: 75)'
+              type: "integer",
+              description: "Minimum score for matches (default: 75)"
             },
             max_matches: {
-              type: 'integer',
-              description: 'Maximum matches to create (default: 50)'
+              type: "integer",
+              description: "Maximum matches to create (default: 50)"
             },
             send_notifications: {
-              type: 'boolean',
-              description: 'Whether to send notifications (default: true)'
+              type: "boolean",
+              description: "Whether to send notifications (default: true)"
             }
           }
         }
       },
-      'natural_language_search' => {
-        name: 'natural_language_search',
-        description: 'Search for matches using natural language queries',
+      "natural_language_search" => {
+        name: "natural_language_search",
+        description: "Search for matches using natural language queries",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             query: {
-              type: 'string',
+              type: "string",
               description: 'Natural language search query (e.g., "Find React developers in New York under $100/hour")'
             }
           },
-          required: ['query']
+          required: [ "query" ]
         }
       },
-      'ai_recommendation' => {
-        name: 'ai_recommendation',
-        description: 'Get AI-powered recommendations for improving matches',
+      "ai_recommendation" => {
+        name: "ai_recommendation",
+        description: "Get AI-powered recommendations for improving matches",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             context: {
-              type: 'string',
+              type: "string",
               description: 'Context for recommendations (e.g., "low match scores", "skill gaps")'
             }
           }
         }
       },
-      'conversational_summary' => {
-        name: 'conversational_summary',
-        description: 'Get a human-friendly summary of matching data',
+      "conversational_summary" => {
+        name: "conversational_summary",
+        description: "Get a human-friendly summary of matching data",
         inputSchema: {
-          type: 'object',
+          type: "object",
           properties: {
             type: {
-              type: 'string',
-              description: 'Type of summary needed',
-              enum: ['daily_report', 'match_analysis', 'system_health']
+              type: "string",
+              description: "Type of summary needed",
+              enum: [ "daily_report", "match_analysis", "system_health" ]
             }
           },
-          required: ['type']
+          required: [ "type" ]
         }
       }
     }
   end
 
   def handle_request(request)
-    case request['method']
-    when 'tools/list'
+    case request["method"]
+    when "tools/list"
       list_tools
-    when 'tools/call'
-      call_tool(request['params'])
+    when "tools/call"
+      call_tool(request["params"])
     else
       error_response("Unknown method: #{request['method']}")
     end
@@ -207,38 +207,38 @@ class McpServer
   end
 
   def call_tool(params)
-    tool_name = params['name']
-    arguments = params['arguments']
+    tool_name = params["name"]
+    arguments = params["arguments"]
 
     case tool_name
-    when 'find_matches_for_opportunity'
-      find_matches_for_opportunity(arguments['opportunity_id'])
-    when 'find_matches_for_engineer'
-      find_matches_for_engineer(arguments['engineer_id'])
-    when 'create_match'
-      create_match(arguments['engineer_id'], arguments['opportunity_id'])
-    when 'trigger_matching'
-      trigger_matching(arguments['opportunity_id'])
-    when 'get_automation_status'
+    when "find_matches_for_opportunity"
+      find_matches_for_opportunity(arguments["opportunity_id"])
+    when "find_matches_for_engineer"
+      find_matches_for_engineer(arguments["engineer_id"])
+    when "create_match"
+      create_match(arguments["engineer_id"], arguments["opportunity_id"])
+    when "trigger_matching"
+      trigger_matching(arguments["opportunity_id"])
+    when "get_automation_status"
       get_automation_status
-    when 'schedule_regular_matching'
-      schedule_regular_matching(arguments['frequency'], arguments['enabled'])
-    when 'get_match_insights'
-      get_match_insights(arguments['days'] || 7)
-    when 'auto_create_high_score_matches'
-      auto_create_high_score_matches(arguments['min_score'] || 85, arguments['max_matches'] || 10)
-    when 'run_automation_cycle'
+    when "schedule_regular_matching"
+      schedule_regular_matching(arguments["frequency"], arguments["enabled"])
+    when "get_match_insights"
+      get_match_insights(arguments["days"] || 7)
+    when "auto_create_high_score_matches"
+      auto_create_high_score_matches(arguments["min_score"] || 85, arguments["max_matches"] || 10)
+    when "run_automation_cycle"
       run_automation_cycle(
-        arguments['min_score'] || 75,
-        arguments['max_matches'] || 50,
-        arguments['send_notifications'] != false
+        arguments["min_score"] || 75,
+        arguments["max_matches"] || 50,
+        arguments["send_notifications"] != false
       )
-    when 'natural_language_search'
-      natural_language_search(arguments['query'])
-    when 'ai_recommendation'
-      ai_recommendation(arguments['context'])
-    when 'conversational_summary'
-      conversational_summary(arguments['type'])
+    when "natural_language_search"
+      natural_language_search(arguments["query"])
+    when "ai_recommendation"
+      ai_recommendation(arguments["context"])
+    when "conversational_summary"
+      conversational_summary(arguments["type"])
     else
       error_response("Unknown tool: #{tool_name}")
     end
@@ -261,7 +261,7 @@ class McpServer
     {
       content: [
         {
-          type: 'text',
+          type: "text",
           text: "Found #{formatted_matches.count} matches for opportunity: #{opportunity.title}"
         }
       ],
@@ -289,7 +289,7 @@ class McpServer
     {
       content: [
         {
-          type: 'text',
+          type: "text",
           text: "Found #{formatted_matches.count} matches for engineer: #{engineer.name}"
         }
       ],
@@ -321,7 +321,7 @@ class McpServer
     {
       content: [
         {
-          type: 'text',
+          type: "text",
           text: "Created match between #{engineer.name} and #{opportunity.title} with #{score}% compatibility"
         }
       ],
@@ -349,7 +349,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: message
           }
         ],
@@ -371,13 +371,13 @@ class McpServer
 
       # Get scheduled jobs
       scheduled_jobs = Sidekiq::ScheduledSet.new
-      automated_matching_jobs = scheduled_jobs.select { |job| job.klass == 'AutomatedMatchingJob' }
-      cleanup_jobs = scheduled_jobs.select { |job| job.klass == 'MatchingCleanupJob' }
+      automated_matching_jobs = scheduled_jobs.select { |job| job.klass == "AutomatedMatchingJob" }
+      cleanup_jobs = scheduled_jobs.select { |job| job.klass == "MatchingCleanupJob" }
 
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: "Automation Status Report - Simplified Schedule"
           }
         ],
@@ -397,7 +397,7 @@ class McpServer
                 scheduled_at: job.at,
                 args: job.args,
                 queue: job.queue,
-                description: 'Runs every 4 hours - handles matching, insights, and notifications'
+                description: "Runs every 4 hours - handles matching, insights, and notifications"
               }
             end,
             weekly_cleanup: cleanup_jobs.map do |job|
@@ -405,7 +405,7 @@ class McpServer
                 scheduled_at: job.at,
                 args: job.args,
                 queue: job.queue,
-                description: 'Runs weekly - cleans up old matches and duplicates'
+                description: "Runs weekly - cleans up old matches and duplicates"
               }
             end
           },
@@ -422,31 +422,31 @@ class McpServer
     begin
       if enabled
         case frequency
-        when 'hourly'
+        when "hourly"
           # Use AutomatedMatchingJob instead of MatchingJob
-          AutomatedMatchingJob.set(cron: '0 * * * *').perform_later({
-            'min_score' => 70,
-            'auto_create_high_score' => true,
-            'high_score_threshold' => 80,
-            'send_notifications' => true
+          AutomatedMatchingJob.set(cron: "0 * * * *").perform_later({
+            "min_score" => 70,
+            "auto_create_high_score" => true,
+            "high_score_threshold" => 80,
+            "send_notifications" => true
           })
           message = "Scheduled hourly comprehensive automation"
-        when 'daily'
+        when "daily"
           # Schedule AutomatedMatchingJob to run daily at 2 AM
-          AutomatedMatchingJob.set(cron: '0 2 * * *').perform_later({
-            'min_score' => 75,
-            'auto_create_high_score' => true,
-            'high_score_threshold' => 85,
-            'send_notifications' => true
+          AutomatedMatchingJob.set(cron: "0 2 * * *").perform_later({
+            "min_score" => 75,
+            "auto_create_high_score" => true,
+            "high_score_threshold" => 85,
+            "send_notifications" => true
           })
           message = "Scheduled daily comprehensive automation at 2 AM"
-        when 'weekly'
+        when "weekly"
           # Schedule AutomatedMatchingJob to run weekly on Sundays at 2 AM
-          AutomatedMatchingJob.set(cron: '0 2 * * 0').perform_later({
-            'min_score' => 80,
-            'auto_create_high_score' => true,
-            'high_score_threshold' => 90,
-            'send_notifications' => true
+          AutomatedMatchingJob.set(cron: "0 2 * * 0").perform_later({
+            "min_score" => 80,
+            "auto_create_high_score" => true,
+            "high_score_threshold" => 90,
+            "send_notifications" => true
           })
           message = "Scheduled weekly comprehensive automation on Sundays at 2 AM"
         else
@@ -455,7 +455,7 @@ class McpServer
       else
         # Cancel scheduled automation jobs
         Sidekiq::ScheduledSet.new.each do |job|
-          job.delete if ['AutomatedMatchingJob', 'MatchingJob'].include?(job.klass)
+          job.delete if [ "AutomatedMatchingJob", "MatchingJob" ].include?(job.klass)
         end
         message = "Disabled automated matching"
       end
@@ -463,7 +463,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: message
           }
         ],
@@ -484,7 +484,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: "Match Insights for the last #{days} days"
           }
         ],
@@ -507,7 +507,7 @@ class McpServer
       created_matches = []
 
       # Find all active opportunities
-      opportunities = ClientOpportunity.where(status: 'active').limit(20)
+      opportunities = ClientOpportunity.where(status: "active").limit(20)
 
       opportunities.each do |opportunity|
         # Find potential matches
@@ -552,7 +552,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: "Auto-created #{created_matches.count} high-score matches"
           }
         ],
@@ -600,7 +600,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: "Automation cycle completed in #{results[:duration_seconds]} seconds"
           }
         ],
@@ -628,7 +628,7 @@ class McpServer
     # Get next scheduled AutomatedMatchingJob
     begin
       scheduled_jobs = Sidekiq::ScheduledSet.new
-      next_job = scheduled_jobs.find { |job| job.klass == 'AutomatedMatchingJob' }
+      next_job = scheduled_jobs.find { |job| job.klass == "AutomatedMatchingJob" }
       next_job&.at
     rescue
       nil
@@ -655,7 +655,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: "Search results for: '#{query}'"
           }
         ],
@@ -676,13 +676,13 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: "AI recommendations based on: #{context}"
           }
         ],
         context: context,
         recommendations: recommendations,
-        priority_actions: recommendations.select { |r| r[:priority] == 'high' }
+        priority_actions: recommendations.select { |r| r[:priority] == "high" }
       }
     rescue => e
       error_response("AI recommendation failed: #{e.message}")
@@ -692,11 +692,11 @@ class McpServer
   def conversational_summary(type)
     begin
       summary_data = case type
-      when 'daily_report'
+      when "daily_report"
         generate_daily_report
-      when 'match_analysis'
+      when "match_analysis"
         generate_match_analysis
-      when 'system_health'
+      when "system_health"
         generate_system_health_summary
       else
         { error: "Unknown summary type" }
@@ -705,7 +705,7 @@ class McpServer
       {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: summary_data[:human_text]
           }
         ],
@@ -730,7 +730,7 @@ class McpServer
     }
 
     # Extract skills
-    skills = ['React', 'Python', 'Ruby', 'Java', 'JavaScript', 'Node.js', 'Rails', 'Django']
+    skills = [ "React", "Python", "Ruby", "Java", "JavaScript", "Node.js", "Rails", "Django" ]
     skills.each do |skill|
       if query.downcase.include?(skill.downcase)
         parsed[:skills] << skill
@@ -744,7 +744,7 @@ class McpServer
     end
 
     # Extract location
-    locations = ['New York', 'San Francisco', 'Remote', 'London', 'Toronto']
+    locations = [ "New York", "San Francisco", "Remote", "London", "Toronto" ]
     locations.each do |location|
       if query.downcase.include?(location.downcase)
         parsed[:location] = location
@@ -766,7 +766,7 @@ class McpServer
 
       engineers.map do |engineer|
         {
-          type: 'engineer',
+          type: "engineer",
           id: engineer.id,
           name: engineer.name,
           skills: engineer.skills.pluck(:name),
@@ -792,38 +792,38 @@ class McpServer
     recommendations = []
 
     case context.downcase
-    when 'low match scores'
+    when "low match scores"
       recommendations << {
-        priority: 'high',
-        action: 'expand_skill_requirements',
-        message: 'Consider broadening skill requirements to find more matches',
-        impact: 'Could increase matches by 30-50%'
+        priority: "high",
+        action: "expand_skill_requirements",
+        message: "Consider broadening skill requirements to find more matches",
+        impact: "Could increase matches by 30-50%"
       }
       recommendations << {
-        priority: 'medium',
-        action: 'adjust_budget',
-        message: 'Review budget ranges to attract more candidates',
-        impact: 'Better budget alignment improves match scores'
+        priority: "medium",
+        action: "adjust_budget",
+        message: "Review budget ranges to attract more candidates",
+        impact: "Better budget alignment improves match scores"
       }
-    when 'skill gaps'
+    when "skill gaps"
       recommendations << {
-        priority: 'high',
-        action: 'training_program',
-        message: 'Consider internal training for high-potential engineers',
-        impact: 'Develop skills internally rather than hiring externally'
+        priority: "high",
+        action: "training_program",
+        message: "Consider internal training for high-potential engineers",
+        impact: "Develop skills internally rather than hiring externally"
       }
       recommendations << {
-        priority: 'medium',
-        action: 'partner_search',
-        message: 'Look for consulting partners with required skills',
-        impact: 'Faster access to specialized skills'
+        priority: "medium",
+        action: "partner_search",
+        message: "Look for consulting partners with required skills",
+        impact: "Faster access to specialized skills"
       }
     else
       recommendations << {
-        priority: 'medium',
-        action: 'general_optimization',
-        message: 'Run automated matching more frequently',
-        impact: 'Stay on top of new opportunities and availability changes'
+        priority: "medium",
+        action: "general_optimization",
+        message: "Run automated matching more frequently",
+        impact: "Stay on top of new opportunities and availability changes"
       }
     end
 
@@ -848,11 +848,11 @@ class McpServer
 
   def generate_match_analysis
     recent_matches = Match.includes(:engineer, :client_opportunity, :client)
-                         .where('created_at > ?', 7.days.ago)
+                         .where("created_at > ?", 7.days.ago)
                          .limit(100)
 
     avg_score = recent_matches.average(:score)&.round(1) || 0
-    high_score_count = recent_matches.where('score >= 85').count
+    high_score_count = recent_matches.where("score >= 85").count
 
     human_text = "Match analysis for the past week: #{recent_matches.count} total matches created with #{avg_score}% average score. #{high_score_count} matches scored 85% or higher, indicating excellent compatibility."
 
@@ -886,7 +886,7 @@ class McpServer
       data: {
         health_score: health_score,
         sidekiq_stats: sidekiq_stats,
-        status: health_score >= 90 ? 'excellent' : health_score >= 70 ? 'good' : 'needs_attention'
+        status: health_score >= 90 ? "excellent" : health_score >= 70 ? "good" : "needs_attention"
       },
       human_text: human_text
     }
@@ -896,10 +896,10 @@ class McpServer
     return {} if matches.empty?
 
     {
-      excellent: matches.where('score >= 90').count,
-      good: matches.where('score >= 75 AND score < 90').count,
-      fair: matches.where('score >= 60 AND score < 75').count,
-      poor: matches.where('score < 60').count
+      excellent: matches.where("score >= 90").count,
+      good: matches.where("score >= 75 AND score < 90").count,
+      fair: matches.where("score >= 60 AND score < 75").count,
+      poor: matches.where("score < 60").count
     }
   end
 

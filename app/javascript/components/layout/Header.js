@@ -133,8 +133,8 @@ const Header = ({ title, user, onSearch, onLogout }) => {
               )}
             </Dropdown.Toggle>
 
-            <Dropdown.Menu style={{ width: '350px', minWidth: '320px' }}>
-              <Dropdown.Header className="d-flex justify-content-between align-items-center">
+            <Dropdown.Menu style={{ width: '350px', minWidth: '320px', maxWidth: '90vw' }}>
+              <Dropdown.Header className="d-flex justify-content-between align-items-center px-3">
                 <strong>Notifications</strong>
                 {unreadCount > 0 && (
                   <Button variant="link" size="sm" className="p-0 text-primary" onClick={markAllAsRead}>
@@ -143,22 +143,31 @@ const Header = ({ title, user, onSearch, onLogout }) => {
                 )}
               </Dropdown.Header>
 
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <div style={{ maxHeight: '300px', overflowY: 'auto', overflowX: 'hidden' }}>
                 {notifications.length > 0 ? (
                   notifications.map((notification) => (
                     <Dropdown.Item
                       key={notification.id}
                       className={`d-flex align-items-start p-3 ${notification.status === 'unread' ? 'bg-light' : ''}`}
                       onClick={() => notification.status === 'unread' && markAsRead(notification.id)}
+                      style={{ minWidth: 0, whiteSpace: 'normal' }}
                     >
-                      <div className="flex-grow-1">
+                      <div className="flex-grow-1" style={{ minWidth: 0 }}>
                         <div className="d-flex align-items-center mb-1">
                           <span className="me-2">{notification.icon}</span>
-                          <div className="small text-dark fw-semibold">
+                          <div className="small text-dark fw-semibold text-truncate" style={{ maxWidth: '250px' }}>
                             {notification.title}
                           </div>
                         </div>
-                        <div className="small text-muted mb-1">
+                        <div className="small text-muted mb-1" style={{
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          lineHeight: '1.3',
+                          display: '-webkit-box',
+                          '-webkit-line-clamp': '2',
+                          '-webkit-box-orient': 'vertical',
+                          overflow: 'hidden'
+                        }}>
                           {notification.message}
                         </div>
                         <div className="d-flex justify-content-between align-items-center">

@@ -37,9 +37,9 @@ class McpController < ApplicationController
     if response_data && !response_data[:error]
       response_data[:ai_metadata] = {
         timestamp: Time.current.iso8601,
-        request_type: request_data['method'],
-        tool_used: request_data.dig('params', 'name'),
-        response_format: 'mcp_v1',
+        request_type: request_data["method"],
+        tool_used: request_data.dig("params", "name"),
+        response_format: "mcp_v1",
         human_readable: generate_human_summary(response_data, request_data)
       }
     end
@@ -48,20 +48,20 @@ class McpController < ApplicationController
   end
 
   def generate_human_summary(response_data, request_data)
-    case request_data.dig('params', 'name')
-    when 'find_matches_for_opportunity'
+    case request_data.dig("params", "name")
+    when "find_matches_for_opportunity"
       matches_count = response_data.dig(:matches)&.count || 0
       "Found #{matches_count} matching engineers for this opportunity"
-    when 'find_matches_for_engineer'
+    when "find_matches_for_engineer"
       matches_count = response_data.dig(:matches)&.count || 0
       "Found #{matches_count} matching opportunities for this engineer"
-    when 'get_automation_status'
+    when "get_automation_status"
       status = response_data.dig(:automation, :sidekiq_status, :processed) || 0
       "System has processed #{status} jobs total"
-    when 'auto_create_high_score_matches'
+    when "auto_create_high_score_matches"
       created = response_data.dig(:created_matches)&.count || 0
       "Automatically created #{created} high-confidence matches"
-    when 'get_match_insights'
+    when "get_match_insights"
       total = response_data.dig(:insights, :summary, :total_matches) || 0
       avg_score = response_data.dig(:insights, :summary, :average_score) || 0
       "Analyzed #{total} matches with #{avg_score}% average score"
