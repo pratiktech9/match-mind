@@ -41,6 +41,7 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
   });
   const [submitting, setSubmitting] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState(null);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   const itemsPerPage = 10;
 
@@ -49,7 +50,7 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
     return JSON.stringify(filters);
   }, [filters]);
 
-  const fetchOpportunities = useCallback(async () => {
+  const fetchOpportunities = useCallback(async (customFilters = null) => {
     // Only show full loading on initial load
     const isInitialLoad = opportunities.length === 0;
 
@@ -62,13 +63,27 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
     setError(null);
 
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage,
-        per_page: itemsPerPage,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        search: searchQuery,
-        ...filters
+      const queryParams = new URLSearchParams();
+
+      // Add basic params
+      queryParams.append('page', currentPage);
+      queryParams.append('per_page', itemsPerPage);
+      queryParams.append('sort_by', sortBy);
+      queryParams.append('sort_order', sortOrder);
+
+      // Add search query if present
+      if (searchQuery) {
+        queryParams.append('search', searchQuery);
+      }
+
+      // Use custom filters if provided, otherwise use current filters
+      const filtersToUse = customFilters || filters;
+
+      // Add filters only if they have values
+      Object.entries(filtersToUse).forEach(([key, value]) => {
+        if (value && value.trim() !== '') {
+          queryParams.append(key, value);
+        }
       });
 
       const response = await fetch(`/api/v1/opportunities?${queryParams}`);
@@ -89,29 +104,37 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
     }
   }, [currentPage, sortBy, sortOrder, searchQuery, opportunities.length, filters]);
 
-  // Debounced version of fetchOpportunities for filter changes
-  const debouncedFetchOpportunities = useCallback(() => {
+  // Separate effect for initial load and pagination/sorting/search
+  useEffect(() => {
+    fetchOpportunities();
+    setHasInitiallyLoaded(true);
+  }, [currentPage, sortBy, sortOrder, searchQuery]);
+
+  // Separate effect for filter changes with debouncing
+  useEffect(() => {
+    // Skip if we haven't done the initial load yet
+    if (!hasInitiallyLoaded) return;
+
+    // Always trigger filter changes, including when clearing filters
+    // Clear existing timer
     if (debounceTimer) {
       window.clearTimeout(debounceTimer);
     }
 
+    // Set up new debounced timer
     const timer = window.setTimeout(() => {
-      fetchOpportunities();
-    }, 300); // 300ms delay
+      fetchOpportunities(filters);
+    }, 300);
 
     setDebounceTimer(timer);
-  }, [fetchOpportunities, debounceTimer]);
 
-  // Fetch data with different strategies
-  useEffect(() => {
-    fetchOpportunities();
-  }, [currentPage, sortBy, sortOrder, searchQuery, fetchOpportunities]); // Immediate fetch for pagination, sorting, search
-
-  useEffect(() => {
-    if (filterString !== JSON.stringify({status:'',client_id:'',priority:'',skills:''})) {
-      debouncedFetchOpportunities();
-    }
-  }, [filterString, debouncedFetchOpportunities]); // Debounced fetch for filter changes
+    // Cleanup function
+    return () => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, [filterString, hasInitiallyLoaded]);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
@@ -145,7 +168,14 @@ const OpportunitiesList = ({ searchQuery = '', onNavigate, clientFilter = null }
 
 
   const handleFilterChange = useCallback((key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      // Only update if there's actually a change
+      if (JSON.stringify(newFilters) !== JSON.stringify(prev)) {
+        return newFilters;
+      }
+      return prev;
+    });
     setCurrentPage(1);
   }, []);
 

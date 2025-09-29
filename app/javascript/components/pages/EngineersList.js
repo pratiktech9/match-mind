@@ -43,6 +43,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState(null);
   const [debounceTimer, setDebounceTimer] = useState(null);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   // Status preview states
   const [statusPreview, setStatusPreview] = useState(null);
@@ -56,7 +57,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     return JSON.stringify(filters);
   }, [filters]);
 
-  const fetchEngineers = useCallback(async () => {
+  const fetchEngineers = useCallback(async (customFilters = null) => {
     // Only show full loading on initial load
     const isInitialLoad = engineers.length === 0;
 
@@ -69,13 +70,27 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     setError(null);
 
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage,
-        per_page: itemsPerPage,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        search: searchQuery,
-        ...filters
+      const queryParams = new URLSearchParams();
+
+      // Add basic params
+      queryParams.append('page', currentPage);
+      queryParams.append('per_page', itemsPerPage);
+      queryParams.append('sort_by', sortBy);
+      queryParams.append('sort_order', sortOrder);
+
+      // Add search query if present
+      if (searchQuery) {
+        queryParams.append('search', searchQuery);
+      }
+
+      // Use custom filters if provided, otherwise use current filters
+      const filtersToUse = customFilters || filters;
+
+      // Add filters only if they have values
+      Object.entries(filtersToUse).forEach(([key, value]) => {
+        if (value && value.trim() !== '') {
+          queryParams.append(key, value);
+        }
       });
 
       const response = await fetch(`/api/v1/engineers?${queryParams}`);
@@ -96,29 +111,37 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     }
   }, [currentPage, sortBy, sortOrder, searchQuery, engineers.length, filters]);
 
-  // Debounced version of fetchEngineers for filter changes
-  const debouncedFetchEngineers = useCallback(() => {
+  // Separate effect for initial load and pagination/sorting/search
+  useEffect(() => {
+    fetchEngineers();
+    setHasInitiallyLoaded(true);
+  }, [currentPage, sortBy, sortOrder, searchQuery]);
+
+  // Separate effect for filter changes with debouncing
+  useEffect(() => {
+    // Skip if we haven't done the initial load yet
+    if (!hasInitiallyLoaded) return;
+
+    // Always trigger filter changes, including when clearing filters
+    // Clear existing timer
     if (debounceTimer) {
       window.clearTimeout(debounceTimer);
     }
 
+    // Set up new debounced timer
     const timer = window.setTimeout(() => {
-      fetchEngineers();
-    }, 300); // 300ms delay
+      fetchEngineers(filters);
+    }, 300);
 
     setDebounceTimer(timer);
-  }, [fetchEngineers, debounceTimer]);
 
-  // Fetch engineers data with different strategies
-  useEffect(() => {
-    fetchEngineers();
-  }, [currentPage, sortBy, sortOrder, searchQuery, fetchEngineers]); // Immediate fetch for pagination, sorting, search
-
-  useEffect(() => {
-    if (filterString !== JSON.stringify({status:'',skills:'',availability:'',experience:''})) {
-      debouncedFetchEngineers();
-    }
-  }, [filterString, debouncedFetchEngineers]); // Debounced fetch for filter changes
+    // Cleanup function
+    return () => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, [filterString, hasInitiallyLoaded]);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
@@ -126,8 +149,11 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       if (debounceTimer) {
         window.clearTimeout(debounceTimer);
       }
+      if (statusCalculationTimer) {
+        window.clearTimeout(statusCalculationTimer);
+      }
     };
-  }, [debounceTimer]);
+  }, [debounceTimer, statusCalculationTimer]);
 
   // Fetch skills and clients for form
   useEffect(() => {
@@ -156,7 +182,14 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   };
 
   const handleFilterChange = useCallback((key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      // Only update if there's actually a change
+      if (JSON.stringify(newFilters) !== JSON.stringify(prev)) {
+        return newFilters;
+      }
+      return prev;
+    });
     setCurrentPage(1);
   }, []);
 
@@ -437,7 +470,11 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
 
             <Card.Body className="p-0">
               {/* Filters Section */}
-              <EngineersFilterSection filters={filters} onFilterChange={handleFilterChange} skills={skills} />
+              <EngineersFilterSection
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                skills={skills}
+              />
 
               {/* Engineers Table */}
               <div className="table-responsive position-relative">
@@ -1103,6 +1140,10 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
 
 // Memoized Filter Components to prevent unnecessary re-renders
 const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
+  const handleFilterChange = useCallback((key, value) => {
+    onFilterChange(key, value);
+  }, [onFilterChange]);
+
   return (
     <div className="p-3 bg-light border-bottom">
       <Row>
@@ -1112,7 +1153,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             <Form.Select
               size="sm"
               value={filters.status}
-              onChange={(e) => onFilterChange('status', e.target.value)}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
             >
               <option value="">All Status</option>
               <option value="available">Available</option>
@@ -1127,7 +1168,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             <Form.Select
               size="sm"
               value={filters.skills}
-              onChange={(e) => onFilterChange('skills', e.target.value)}
+              onChange={(e) => handleFilterChange('skills', e.target.value)}
             >
               <option value="">All Skills</option>
               {skills.map(skill => (
@@ -1144,7 +1185,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             <Form.Select
               size="sm"
               value={filters.availability}
-              onChange={(e) => onFilterChange('availability', e.target.value)}
+              onChange={(e) => handleFilterChange('availability', e.target.value)}
             >
               <option value="">All</option>
               <option value="immediate">Immediate</option>
@@ -1160,7 +1201,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             <Form.Select
               size="sm"
               value={filters.experience}
-              onChange={(e) => onFilterChange('experience', e.target.value)}
+              onChange={(e) => handleFilterChange('experience', e.target.value)}
             >
               <option value="">All Levels</option>
               <option value="junior">Junior (0-2 years)</option>

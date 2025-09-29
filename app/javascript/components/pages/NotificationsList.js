@@ -25,16 +25,27 @@ const NotificationsList = () => {
     priority: '',
     notification_type: ''
   });
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (customFilters = null) => {
     setLoading(true);
     setError(null);
 
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage,
-        per_page: itemsPerPage,
-        ...filters
+      const queryParams = new URLSearchParams();
+
+      // Add basic params
+      queryParams.append('page', currentPage);
+      queryParams.append('per_page', itemsPerPage);
+
+      // Use custom filters if provided, otherwise use current filters
+      const filtersToUse = customFilters || filters;
+
+      // Add filters only if they have values
+      Object.entries(filtersToUse).forEach(([key, value]) => {
+        if (value && value.trim() !== '') {
+          queryParams.append(key, value);
+        }
       });
 
       const response = await fetch(`/api/v1/notifications?${queryParams}`);
@@ -54,15 +65,29 @@ const NotificationsList = () => {
     }
   }, [currentPage, filters, itemsPerPage]);
 
+  // Separate effect for initial load and pagination
   useEffect(() => {
     fetchNotifications();
-  }, [fetchNotifications]);
+    setHasInitiallyLoaded(true);
+  }, [currentPage]);
+
+  // Separate effect for filter changes
+  useEffect(() => {
+    // Skip if we haven't done the initial load yet
+    if (!hasInitiallyLoaded) return;
+
+    fetchNotifications(filters);
+  }, [JSON.stringify(filters), hasInitiallyLoaded]);
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
+    setFilters(prev => {
+      const newFilters = { ...prev, [filterType]: value };
+      // Only update if there's actually a change
+      if (JSON.stringify(newFilters) !== JSON.stringify(prev)) {
+        return newFilters;
+      }
+      return prev;
+    });
     setCurrentPage(1);
   };
 
@@ -185,16 +210,16 @@ const NotificationsList = () => {
               </p>
             </div>
             <div>
-              <Button 
-                variant="outline-primary" 
-                size="sm" 
+              <Button
+                variant="outline-primary"
+                size="sm"
                 onClick={markAllAsRead}
                 className="me-2"
               >
                 Mark All Read
               </Button>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 size="sm"
                 onClick={() => fetch('/api/v1/notifications/generate_insights', { method: 'POST' })}
               >
@@ -254,8 +279,8 @@ const NotificationsList = () => {
                   </Form.Group>
                 </Col>
                 <Col md={3} className="d-flex align-items-end">
-                  <Button 
-                    variant="outline-secondary" 
+                  <Button
+                    variant="outline-secondary"
                     onClick={() => setFilters({ status: 'unread', priority: '', notification_type: '' })}
                   >
                     Reset Filters
@@ -334,19 +359,19 @@ const NotificationsList = () => {
           {totalPages > 1 && (
             <div className="d-flex justify-content-center mt-4">
               <Pagination>
-                <Pagination.First 
-                  onClick={() => setCurrentPage(1)} 
+                <Pagination.First
+                  onClick={() => setCurrentPage(1)}
                   disabled={currentPage === 1}
                 />
-                <Pagination.Prev 
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} 
+                <Pagination.Prev
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 />
-                
+
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
                   if (pageNum > totalPages) return null;
-                  
+
                   return (
                     <Pagination.Item
                       key={pageNum}
@@ -357,13 +382,13 @@ const NotificationsList = () => {
                     </Pagination.Item>
                   );
                 })}
-                
-                <Pagination.Next 
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} 
+
+                <Pagination.Next
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 />
-                <Pagination.Last 
-                  onClick={() => setCurrentPage(totalPages)} 
+                <Pagination.Last
+                  onClick={() => setCurrentPage(totalPages)}
                   disabled={currentPage === totalPages}
                 />
               </Pagination>

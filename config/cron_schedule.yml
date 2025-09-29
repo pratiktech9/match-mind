@@ -3,7 +3,7 @@ automated_matching:
   cron: '0 */4 * * *'
   class: 'AutomatedMatchingJob'
   description: 'AI-powered automated matching with insights and notifications'
-  args: [{ 'min_score' => 75, 'auto_create_high_score' => true, 'high_score_threshold' => 85, 'send_notifications' => true }]
+  args: [{ 'min_score': 75, 'auto_create_high_score': true, 'high_score_threshold': 85, 'send_notifications': true }]
 
 # Daily engineer status update - runs every day at 6 AM
 daily_status_update:
