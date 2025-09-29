@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import {
   Container, Row, Col, Card, Form, Button, Badge,
   Table, Pagination, Spinner, Alert, Modal
@@ -10,6 +10,8 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
   const [triggering, setTriggering] = useState(false);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const fetchMatchesRef = useRef(null);
   const [filters, setFilters] = useState({
     status: '',
     client_id: '',
@@ -65,6 +67,7 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       setMatches(data.data || []);
       setTotalPages(data.meta?.total_pages || 1);
       setTotalCount(data.meta?.total_count || 0);
+      setHasInitiallyLoaded(true);
     } catch (err) {
       console.error('Error fetching matches:', err);
       setError('Failed to load matches. Please try again.');
@@ -72,7 +75,12 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
       setLoading(false);
       setDataLoading(false);
     }
-  }, [currentPage, searchQuery, matches.length, filters]);
+  }, [currentPage, searchQuery, filters, itemsPerPage]);
+
+  // Store the current fetchMatches in ref
+  useEffect(() => {
+    fetchMatchesRef.current = fetchMatches;
+  }, [fetchMatches]);
 
   // Debounced version of fetchMatches for filter changes
   const debouncedFetchMatches = useCallback(() => {
@@ -81,21 +89,34 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
     }
 
     const timer = window.setTimeout(() => {
-      fetchMatches();
+      if (fetchMatchesRef.current) {
+        fetchMatchesRef.current();
+      }
     }, 300); // 300ms delay
 
     setDebounceTimer(timer);
-  }, [fetchMatches, debounceTimer]);
+  }, []); // No dependencies to prevent recreation
 
+  // Initial load
   useEffect(() => {
-    fetchMatches();
-  }, [currentPage, searchQuery, fetchMatches]); // Only immediate fetch for page/search changes
+    if (!hasInitiallyLoaded && fetchMatchesRef.current) {
+      fetchMatchesRef.current();
+    }
+  }, [hasInitiallyLoaded]);
 
+  // Handle page and search changes (immediate) - only when not initial load
   useEffect(() => {
-    if (filterString !== '{}') { // Only debounce when filters actually exist
+    if (hasInitiallyLoaded && fetchMatchesRef.current) {
+      fetchMatchesRef.current();
+    }
+  }, [currentPage, searchQuery, hasInitiallyLoaded]);
+
+  // Handle filter changes (debounced) - separate from other triggers
+  useEffect(() => {
+    if (hasInitiallyLoaded && filterString !== '{}') {
       debouncedFetchMatches();
     }
-  }, [filterString, debouncedFetchMatches]); // Debounced fetch for filter changes
+  }, [filterString, hasInitiallyLoaded]);
 
   // Cleanup debounce timer and polling on unmount
   useEffect(() => {
@@ -128,13 +149,13 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
         const data = await response.json();
         const newMatches = data.matches || [];
         setRecentMatches(newMatches);
-        
+
         // Merge recent matches into the main table
         if (newMatches.length > 0) {
           setMatches(prevMatches => {
             // Create a map of existing matches by ID to avoid duplicates
             const existingMatchIds = new Set(prevMatches.map(match => match.id));
-            
+
             // Convert recent matches to the same format as main matches
             const formattedRecentMatches = newMatches
               .filter(match => !existingMatchIds.has(match.id))
@@ -160,14 +181,14 @@ const MatchingPage = ({ searchQuery = '', onNavigate }) => {
                 created_at: match.created_at,
                 updated_at: match.created_at
               }));
-            
+
             // Combine and sort by creation time (newest first)
             const combinedMatches = [...formattedRecentMatches, ...prevMatches]
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            
+
             return combinedMatches;
           });
-          
+
           // Update total count
           setTotalCount(prev => prev + newMatches.length);
         }

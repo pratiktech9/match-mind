@@ -36,7 +36,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     skills_list: '',
     specializations: '',
     industry_experience: 0,
-    notice_date: ''
+    notice_date: '',
+    skill_ids: []
   });
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState(null);
@@ -850,11 +851,11 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               <Form.Select
                 multiple
                 name="skill_ids"
-                value={newEngineer.skill_ids.map(id => id.toString())}
+                value={(newEngineer.skill_ids || []).map(id => id.toString())}
                 onChange={(e) => handleSkillChange(e, false)}
                 style={{ height: '120px' }}
               >
-                {skills.map(skill => (
+                {(skills || []).map(skill => (
                   <option key={skill.id} value={skill.id}>{skill.name}</option>
                 ))}
               </Form.Select>
@@ -1082,7 +1083,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                 onChange={(e) => handleSkillChange(e, true)}
                 style={{ height: '120px' }}
               >
-                {skills.map(skill => (
+                {(skills || []).map(skill => (
                   <option key={skill.id} value={skill.id}>{skill.name}</option>
                 ))}
               </Form.Select>
@@ -1162,7 +1163,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
               onChange={(e) => handleFilterChange('skills', e.target.value)}
             >
               <option value="">All Skills</option>
-              {skills.map(skill => (
+              {(skills || []).map(skill => (
                 <option key={skill.id} value={skill.name}>
                   {skill.name}
                 </option>
