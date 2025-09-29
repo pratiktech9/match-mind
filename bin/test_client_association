@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+require_relative '../config/environment'
+
+puts "🔍 Testing Current Client Association"
+puts "=" * 40
+
+engineers = Engineer.all
+engineers.each do |engineer|
+  client_name = engineer.current_client ? engineer.current_client.name : "None"
+  puts "#{engineer.name}:"
+  puts "  - Client ID: #{engineer.current_client_id || 'nil'}"
+  puts "  - Client Name: #{client_name}"
+  puts "  - Status: #{engineer.status}"
+  puts ""
+end
+
+puts "✅ Association test complete!"
