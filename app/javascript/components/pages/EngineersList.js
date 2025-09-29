@@ -265,9 +265,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const getStatusBadgeVariant = (status) => {
     const variants = {
       available: 'success',
-      rolling_off: 'warning',
-      on_bench: 'info',
-      allocated: 'secondary'
+      rolling_off_soon: 'warning',
+      on_project: 'primary'
     };
     return variants[status] || 'secondary';
   };
@@ -634,11 +633,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                     onChange={handleInputChange}
                   >
                     <option value="available">Available</option>
-                    <option value="available_soon">Available Soon</option>
-                    <option value="busy">Busy</option>
-                    <option value="rolling_off">Rolling Off</option>
-                    <option value="on_bench">On Bench</option>
-                    <option value="allocated">Allocated</option>
+                    <option value="rolling_off_soon">Rolling Off Soon</option>
+                    <option value="on_project">On Project</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -852,11 +848,8 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                     onChange={handleEditInputChange}
                   >
                     <option value="available">Available</option>
-                    <option value="available_soon">Available Soon</option>
-                    <option value="busy">Busy</option>
-                    <option value="rolling_off">Rolling Off</option>
-                    <option value="on_bench">On Bench</option>
-                    <option value="allocated">Allocated</option>
+                    <option value="rolling_off_soon">Rolling Off Soon</option>
+                    <option value="on_project">On Project</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -1026,10 +1019,8 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             >
               <option value="">All Status</option>
               <option value="available">Available</option>
-              <option value="rolling_off">Rolling Off</option>
-              <option value="on_bench">On Bench</option>
-              <option value="assigned">Assigned</option>
-              <option value="unavailable">Unavailable</option>
+              <option value="rolling_off_soon">Rolling Off Soon</option>
+              <option value="on_project">On Project</option>
             </Form.Select>
           </Form.Group>
         </Col>

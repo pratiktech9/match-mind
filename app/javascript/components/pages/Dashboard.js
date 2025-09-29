@@ -8,7 +8,7 @@ const Dashboard = ({ onNavigate }) => {
   const [stats, setStats] = useState({
     available: 0,
     rolling_off: 0,
-    on_bench: 0,
+    on_project: 0,
     open_opportunities: 0
   });
   const [availabilityCalendar, setAvailabilityCalendar] = useState([]);
@@ -33,7 +33,7 @@ const Dashboard = ({ onNavigate }) => {
       ]);
 
       // Check individual responses
-      let statsData = { data: { available: 0, rolling_off: 0, on_bench: 0, open_opportunities: 0 } };
+      let statsData = { data: { available: 0, rolling_off: 0, on_project: 0, open_opportunities: 0 } };
       let calendarData = { data: [] };
       let urgentData = { data: [] };
 
@@ -72,7 +72,7 @@ const Dashboard = ({ onNavigate }) => {
     const colors = {
       available: 'success',
       rolling_off: 'warning',
-      on_bench: 'info',
+      on_project: 'info',
       open_opportunities: 'primary'
     };
     return colors[type] || 'secondary';
@@ -82,7 +82,7 @@ const Dashboard = ({ onNavigate }) => {
     const icons = {
       available: '✅',
       rolling_off: '⏰',
-      on_bench: '🔄',
+      on_project: '🔄',
       open_opportunities: '💼'
     };
     return icons[type] || '📊';
@@ -92,7 +92,7 @@ const Dashboard = ({ onNavigate }) => {
     const labels = {
       available: 'Available',
       rolling_off: 'Rolling Off',
-      on_bench: 'On Bench',
+      on_project: 'On Project',
       open_opportunities: 'Open Opps'
     };
     return labels[type] || type;

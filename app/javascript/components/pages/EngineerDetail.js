@@ -68,8 +68,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
     const variants = {
       available: 'success',
       rolling_off_soon: 'warning',
-      on_bench: 'info',
-      on_project: 'secondary'
+      on_project: 'info'
     };
     return variants[status] || 'secondary';
   };
@@ -78,8 +77,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
     const icons = {
       available: '🟢',
       rolling_off_soon: '🟡',
-      on_bench: '🔵',
-      on_project: '🟠'
+      on_project: '�'
     };
     return icons[status] || '⚪';
   };
@@ -289,7 +287,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
                           <strong>Current:</strong> {
                             engineer.status === 'available' ? 'Available immediately' :
                             engineer.status === 'rolling_off_soon' ? 'Available soon' :
-                            engineer.status === 'on_bench' ? 'On bench' : 'On project'}
+                            'On project'}
                         </div>
                         <div className="mb-2">
                           <strong>Notice Period:</strong> {engineer.notice_date ?

@@ -91,7 +91,7 @@ engineers_data = [
     name: "Michael Chen",
     email: "michael.chen@tech9.com",
     country: "Canada",
-    status: "available_soon",
+    status: "rolling_off_soon",
     current_client: "TechCorp Inc",
     industry_experience: "8 years",
     target_rate: 120,
@@ -111,7 +111,7 @@ engineers_data = [
     name: "David Kim",
     email: "david.kim@tech9.com",
     country: "South Korea",
-    status: "busy",
+    status: "on_project",
     current_client: "StartupXYZ",
     industry_experience: "10 years",
     target_rate: 150,
@@ -131,7 +131,7 @@ engineers_data = [
     name: "James Wilson",
     email: "james.wilson@tech9.com",
     country: "United Kingdom",
-    status: "available_soon",
+    status: "rolling_off_soon",
     current_client: "GlobalTech",
     industry_experience: "7 years",
     target_rate: 110,
@@ -334,3 +334,11 @@ puts "Try these API endpoints:"
 puts "- GET /api/opportunities/1/matches (find engineers for Rails opportunity)"
 puts "- GET /api/engineers/1/matches (find opportunities for Sarah)"
 puts "- POST /api/matches (create a match with AI scoring)"
+puts ""
+puts "🤖 MCP Server Ready!"
+puts "Try the MCP endpoint:"
+puts "- POST /mcp with MCP protocol requests"
+puts "- Available tools: find_matches_for_opportunity, find_matches_for_engineer, create_match, trigger_matching"
+puts ""
+puts "Example MCP request:"
+puts 'curl -X POST http://localhost:3000/mcp -H "Content-Type: application/json" -d \'{"method": "tools/list"}\''

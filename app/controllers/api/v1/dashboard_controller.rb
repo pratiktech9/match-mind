@@ -5,7 +5,7 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
       stats = {
         available: Engineer.available.count,
         rolling_off: Engineer.rolling_off_soon.count,
-        on_bench: Engineer.where(status: "on_bench").count,
+        on_project: Engineer.on_project.count,
         open_opportunities: Client.joins(:client_opportunities).where(client_opportunities: { status: "active" }).count
       }
 
@@ -13,7 +13,7 @@ class Api::V1::DashboardController < Api::V1::ApplicationController
     rescue => e
       Rails.logger.error "Dashboard stats error: #{e.message}"
       render json: {
-        data: { available: 0, rolling_off: 0, on_bench: 0, open_opportunities: 0 },
+        data: { available: 0, rolling_off: 0, on_project: 0, open_opportunities: 0 },
         error: "Could not fetch stats"
       }
     end
