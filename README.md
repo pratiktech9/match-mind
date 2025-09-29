@@ -52,7 +52,7 @@ Match Mind is a sophisticated Ruby on Rails application that uses **AI-powered a
 git clone https://github.com/pratiktech9/match-mind.git
 cd match-mind
 bundle install
-npm install
+yarn install
 ```
 
 ### 2. **Environment Configuration**
@@ -176,12 +176,6 @@ Weekly on Sundays at 3:00 AM:
 
 ## 🚢 **Deployment**
 
-### **Docker Deployment**
-```bash
-# Build and run with Docker
-docker build -t match-mind .
-docker run -p 3000:3000 match-mind
-```
 
 ### **Heroku Deployment**
 ```bash
@@ -201,10 +195,9 @@ GOOGLE_CLIENT_ID=your_google_id          # OAuth authentication
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Run tests (`./bin/test_status_calculation`)
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 **License**
 
@@ -212,9 +205,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎪 **Demo & Screenshots**
 
-- **Live Demo**: [https://match-mind-demo.herokuapp.com](https://match-mind-demo.herokuapp.com)
-- **MCP Endpoint**: `POST http://localhost:3000/mcp`
-- **API Documentation**: Available at `/api-docs` when running locally
+- **Live Demo**: [https://match-mind-demo.herokuapp.com](https://match-mind-app-2b4594c59d02.herokuapp.com/)]
+- **MCP Endpoint**: `POST https://match-mind-app-2b4594c59d02.herokuapp.com/mcp`
 
 ---
 
