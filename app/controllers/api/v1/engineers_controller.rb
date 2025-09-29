@@ -89,6 +89,28 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
     render_success(nil, "Engineer deleted successfully")
   end
 
+  # POST /api/v1/engineers/calculate_status_preview
+  def calculate_status_preview
+    notice_date = params[:notice_date]
+    expected_end_date = params[:expected_end_date]
+    return_date = params[:return_date]
+    current_client_id = params[:current_client_id]
+
+    # Create a temporary engineer instance for calculation
+    temp_engineer = Engineer.new
+    calculated_status = temp_engineer.calculate_status_from_dates_preview(
+      notice_date, expected_end_date, return_date, current_client_id
+    )
+
+    render json: {
+      data: {
+        status: calculated_status,
+        status_display: format_status_display(calculated_status),
+        status_color: get_status_color(calculated_status)
+      }
+    }
+  end
+
   private
 
   def set_engineer
@@ -108,7 +130,7 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
 
   def engineer_params
     params.require(:engineer).permit(
-      :name, :email, :country, :status, :current_client, :industry_experience,
+      :name, :email, :country, :current_client_id, :industry_experience,
       :notice_date, :expected_end_date, :return_date, :notes, :utilization, :target_rate,
       skill_ids: []
     )
@@ -121,7 +143,8 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
       email: engineer.email,
       country: engineer.country,
       status: engineer.status,
-      current_client: engineer.current_client,
+      current_client_id: engineer.current_client_id,
+      current_client: engineer.current_client&.name,
       industry_experience: engineer.industry_experience,
       utilization: engineer.utilization,
       target_rate: engineer.target_rate,
@@ -164,6 +187,32 @@ class Api::V1::EngineersController < Api::V1::ApplicationController
       Rails.logger.error "Skill not found: #{skill_id}"
     rescue => e
       Rails.logger.error "Error adding skill #{skill_id} to engineer: #{e.message}"
+    end
+  end
+
+  def format_status_display(status)
+    case status
+    when "available"
+      "Available"
+    when "rolling_off_soon"
+      "Rolling Off Soon"
+    when "on_project"
+      "On Project"
+    else
+      status&.humanize || "Unknown"
+    end
+  end
+
+  def get_status_color(status)
+    case status
+    when "available"
+      "success"
+    when "rolling_off_soon"
+      "warning"
+    when "on_project"
+      "info"
+    else
+      "secondary"
     end
   end
 end

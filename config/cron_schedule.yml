@@ -1,8 +1,15 @@
-# Daily matching job - runs every day at 2 AM
-daily_matching:
-  cron: '0 2 * * *'
-  class: 'MatchingJob'
-  description: 'Daily AI matching process for all active opportunities'
+# Comprehensive automated matching with AI insights - runs every 4 hours
+automated_matching:
+  cron: '0 */4 * * *'
+  class: 'AutomatedMatchingJob'
+  description: 'AI-powered automated matching with insights and notifications'
+  args: [{ 'min_score' => 75, 'auto_create_high_score' => true, 'high_score_threshold' => 85, 'send_notifications' => true }]
+
+# Daily engineer status update - runs every day at 6 AM
+daily_status_update:
+  cron: '0 6 * * *'
+  class: 'EngineerStatusUpdateJob'
+  description: 'Daily update of engineer statuses based on current dates'
   args: []
 
 # Weekly cleanup job - runs every Sunday at 3 AM

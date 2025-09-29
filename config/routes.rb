@@ -8,7 +8,11 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :engineers
+      resources :engineers do
+        collection do
+          post :calculate_status_preview
+        end
+      end
       resources :skills, only: [ :index, :show ]
       resources :clients
       resources :opportunities
@@ -50,7 +54,7 @@ Rails.application.routes.draw do
   namespace :api do
     get "current_user", to: "users#show"
 
-    # AI Matching routes
+    # AI Matching routes (support both formats)
     get "opportunities/:opportunity_id/matches", to: "matching#find_matches_for_opportunity"
     get "engineers/:engineer_id/matches", to: "matching#find_matches_for_engineer"
     post "matches", to: "matching#create_match"
@@ -60,6 +64,17 @@ Rails.application.routes.draw do
     post "matching/trigger", to: "matching#trigger_matching"
     patch "matches/:id/status", to: "matching#update_match_status"
     get "matches/recent", to: "matching#get_recent_matches"
+  end
+
+  # MCP Server endpoint
+  post '/mcp', to: 'mcp#handle_request'
+
+  # MCP-compatible API endpoints (optional alternative)
+  namespace :mcp_api do
+    post 'matches/find_for_opportunity', to: 'mcp#handle_request'
+    post 'matches/find_for_engineer', to: 'mcp#handle_request'
+    post 'matches/create', to: 'mcp#handle_request'
+    post 'matching/trigger', to: 'mcp#handle_request'
   end
 
   # Defines the root path route ("/")

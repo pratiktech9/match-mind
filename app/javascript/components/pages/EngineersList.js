@@ -7,6 +7,7 @@ import {
 const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [engineers, setEngineers] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,8 +30,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     name: '',
     email: '',
     country: '',
-    status: 'available',
-    current_client: '',
+    current_client_id: '',
     industry_experience: '',
     notice_date: '',
     expected_end_date: '',
@@ -43,6 +43,11 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState(null);
   const [debounceTimer, setDebounceTimer] = useState(null);
+
+  // Status preview states
+  const [statusPreview, setStatusPreview] = useState(null);
+  const [editStatusPreview, setEditStatusPreview] = useState(null);
+  const [statusCalculationTimer, setStatusCalculationTimer] = useState(null);
 
   const itemsPerPage = 10;
 
@@ -124,9 +129,10 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     };
   }, [debounceTimer]);
 
-  // Fetch skills for form
+  // Fetch skills and clients for form
   useEffect(() => {
     fetchSkills();
+    fetchClients();
   }, []);
 
   const fetchSkills = async () => {
@@ -136,6 +142,16 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       setSkills(data.data || []);
     } catch (err) {
       console.error('Error fetching skills:', err);
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      const response = await fetch('/api/v1/clients');
+      const data = await response.json();
+      setClients(data.data || []);
+    } catch (err) {
+      console.error('Error fetching clients:', err);
     }
   };
 
@@ -170,8 +186,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       name: '',
       email: '',
       country: '',
-      status: 'available',
-      current_client: '',
+      current_client_id: '',
       industry_experience: '',
       notice_date: '',
       expected_end_date: '',
@@ -183,21 +198,41 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     });
     setSubmitting(false);
     setModalError(null);
+    setStatusPreview(null);
+    if (statusCalculationTimer) {
+      clearTimeout(statusCalculationTimer);
+    }
   };
 
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditingEngineer(null);
+    setEditStatusPreview(null);
+    if (statusCalculationTimer) {
+      clearTimeout(statusCalculationTimer);
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewEngineer(prev => ({ ...prev, [name]: value }));
+    const updatedEngineer = { ...newEngineer, [name]: value };
+    setNewEngineer(updatedEngineer);
+
+    // Calculate status preview for date-related fields
+    if (['notice_date', 'expected_end_date', 'return_date', 'current_client_id'].includes(name)) {
+      calculateStatusPreview(updatedEngineer, false);
+    }
   };
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditingEngineer(prev => ({ ...prev, [name]: value }));
+    const updatedEngineer = { ...editingEngineer, [name]: value };
+    setEditingEngineer(updatedEngineer);
+
+    // Calculate status preview for date-related fields
+    if (['notice_date', 'expected_end_date', 'return_date', 'current_client_id'].includes(name)) {
+      calculateStatusPreview(updatedEngineer, true);
+    }
   };
 
   const handleSubmitEngineer = async (e) => {
@@ -282,11 +317,15 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
 
   const handleEditEngineer = (engineer) => {
     setModalError(null);
-    setEditingEngineer({
+    const engineerToEdit = {
       ...engineer,
       skill_ids: engineer.skills?.map(skill => skill.id) || []
-    });
+    };
+    setEditingEngineer(engineerToEdit);
     setShowEditModal(true);
+
+    // Calculate initial status preview for edit modal
+    calculateStatusPreview(engineerToEdit, true);
   };
 
   const handleSkillChange = (e, isEdit = false) => {
@@ -300,6 +339,44 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
     } else {
       setNewEngineer(prev => ({ ...prev, skill_ids: selectedIds }));
     }
+  };
+
+  // Calculate status preview based on dates
+  const calculateStatusPreview = async (data, isEdit = false) => {
+    if (statusCalculationTimer) {
+      clearTimeout(statusCalculationTimer);
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch('/api/v1/engineers/calculate_status_preview', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          },
+          body: JSON.stringify({
+            notice_date: data.notice_date,
+            expected_end_date: data.expected_end_date,
+            return_date: data.return_date,
+            current_client_id: data.current_client_id
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (isEdit) {
+            setEditStatusPreview(result.data);
+          } else {
+            setStatusPreview(result.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error calculating status preview:', error);
+      }
+    }, 300); // 300ms debounce
+
+    setStatusCalculationTimer(timer);
   };
 
   if (loading) {
@@ -626,16 +703,21 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
-                  <Form.Select
-                    name="status"
-                    value={newEngineer.status}
-                    onChange={handleInputChange}
-                  >
-                    <option value="available">Available</option>
-                    <option value="rolling_off_soon">Rolling Off Soon</option>
-                    <option value="on_project">On Project</option>
-                  </Form.Select>
+                  <Form.Label>Status <small className="text-muted">(Auto-calculated)</small></Form.Label>
+                  <div className="mt-2">
+                    {statusPreview ? (
+                      <Badge bg={statusPreview.status_color} className="px-3 py-2">
+                        {statusPreview.status_display}
+                      </Badge>
+                    ) : (
+                      <Badge bg="secondary" className="px-3 py-2">
+                        Available
+                      </Badge>
+                    )}
+                    <div className="small text-muted mt-1">
+                      Status is automatically calculated based on dates and client assignment
+                    </div>
+                  </div>
                 </Form.Group>
               </Col>
             </Row>
@@ -643,13 +725,18 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Current Client</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="current_client"
-                    value={newEngineer.current_client}
+                  <Form.Select
+                    name="current_client_id"
+                    value={newEngineer.current_client_id}
                     onChange={handleInputChange}
-                    placeholder="Enter current client"
-                  />
+                  >
+                    <option value="">No current client (Available)</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -841,16 +928,21 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
-                  <Form.Select
-                    name="status"
-                    value={editingEngineer?.status || ''}
-                    onChange={handleEditInputChange}
-                  >
-                    <option value="available">Available</option>
-                    <option value="rolling_off_soon">Rolling Off Soon</option>
-                    <option value="on_project">On Project</option>
-                  </Form.Select>
+                  <Form.Label>Status <small className="text-muted">(Auto-calculated)</small></Form.Label>
+                  <div className="mt-2">
+                    {editStatusPreview ? (
+                      <Badge bg={editStatusPreview.status_color} className="px-3 py-2">
+                        {editStatusPreview.status_display}
+                      </Badge>
+                    ) : (
+                      <Badge bg="secondary" className="px-3 py-2">
+                        {editingEngineer?.status ? formatStatus(editingEngineer.status) : 'Available'}
+                      </Badge>
+                    )}
+                    <div className="small text-muted mt-1">
+                      Status is automatically calculated based on dates and client assignment
+                    </div>
+                  </div>
                 </Form.Group>
               </Col>
             </Row>
@@ -859,13 +951,18 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Current Client</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="current_client"
-                    value={editingEngineer?.current_client || ''}
+                  <Form.Select
+                    name="current_client_id"
+                    value={editingEngineer?.current_client_id || ''}
                     onChange={handleEditInputChange}
-                    placeholder="Enter current client"
-                  />
+                  >
+                    <option value="">No current client (Available)</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
               <Col md={6}>

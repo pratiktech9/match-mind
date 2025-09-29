@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_28_090643) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_29_051639) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -71,7 +71,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_090643) do
     t.string "email"
     t.string "country"
     t.string "status"
-    t.string "current_client"
     t.string "industry_experience"
     t.date "notice_date"
     t.date "expected_end_date"
@@ -81,6 +80,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_090643) do
     t.decimal "target_rate"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "current_client_id"
+    t.index ["current_client_id"], name: "index_engineers_on_current_client_id"
     t.index ["email"], name: "index_engineers_on_email"
   end
 
@@ -147,6 +148,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_090643) do
   add_foreign_key "client_opportunity_skills", "skills"
   add_foreign_key "engineer_skills", "engineers"
   add_foreign_key "engineer_skills", "skills"
+  add_foreign_key "engineers", "clients", column: "current_client_id"
   add_foreign_key "matches", "client_opportunities"
   add_foreign_key "matches", "clients"
   add_foreign_key "matches", "engineers"

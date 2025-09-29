@@ -10,12 +10,13 @@
 
 # Clear existing data
 puts "Clearing existing data..."
+Notification.destroy_all
+Match.destroy_all
 User.destroy_all
 Engineer.destroy_all
 Client.destroy_all
 ClientOpportunity.destroy_all
 Skill.destroy_all
-Match.destroy_all
 
 # Create Skills
 puts "Creating skills..."
@@ -74,6 +75,40 @@ skills_data = [
 skills = skills_data.map { |skill_data| Skill.create!(skill_data) }
 puts "Created #{skills.count} skills"
 
+# Create Clients first (needed for engineer current_client references)
+puts "Creating clients..."
+clients_data = [
+  {
+    name: "TechCorp Inc",
+    industry: "Technology"
+  },
+  {
+    name: "StartupXYZ",
+    industry: "Fintech"
+  },
+  {
+    name: "GlobalTech",
+    industry: "E-commerce"
+  },
+  {
+    name: "HealthTech Solutions",
+    industry: "Healthcare"
+  },
+  {
+    name: "EduTech Innovations",
+    industry: "Education"
+  }
+]
+
+clients = clients_data.map { |client_data| Client.create!(client_data) }
+puts "Created #{clients.count} clients"
+
+# Helper method to find client by name
+def find_client_id_by_name(clients, name)
+  client = clients.find { |c| c.name == name }
+  client&.id
+end
+
 # Create Engineers
 puts "Creating engineers..."
 engineers_data = [
@@ -81,8 +116,7 @@ engineers_data = [
     name: "Sarah Johnson",
     email: "sarah.johnson@tech9.com",
     country: "United States",
-    status: "available",
-    current_client: nil,
+    current_client_id: nil,
     industry_experience: "5 years",
     target_rate: 85,
     utilization: 0
@@ -91,9 +125,9 @@ engineers_data = [
     name: "Michael Chen",
     email: "michael.chen@tech9.com",
     country: "Canada",
-    status: "rolling_off_soon",
-    current_client: "TechCorp Inc",
+    current_client_id: find_client_id_by_name(clients, "TechCorp Inc"),
     industry_experience: "8 years",
+    notice_date: Date.current + 15.days,
     target_rate: 120,
     utilization: 80
   },
@@ -101,8 +135,7 @@ engineers_data = [
     name: "Emily Rodriguez",
     email: "emily.rodriguez@tech9.com",
     country: "Mexico",
-    status: "available",
-    current_client: nil,
+    current_client_id: nil,
     industry_experience: "3 years",
     target_rate: 65,
     utilization: 0
@@ -111,9 +144,9 @@ engineers_data = [
     name: "David Kim",
     email: "david.kim@tech9.com",
     country: "South Korea",
-    status: "on_project",
-    current_client: "StartupXYZ",
+    current_client_id: find_client_id_by_name(clients, "StartupXYZ"),
     industry_experience: "10 years",
+    expected_end_date: Date.current + 3.months,
     target_rate: 150,
     utilization: 100
   },
@@ -121,8 +154,7 @@ engineers_data = [
     name: "Lisa Wang",
     email: "lisa.wang@tech9.com",
     country: "Singapore",
-    status: "available",
-    current_client: nil,
+    current_client_id: nil,
     industry_experience: "6 years",
     target_rate: 95,
     utilization: 0
@@ -131,9 +163,9 @@ engineers_data = [
     name: "James Wilson",
     email: "james.wilson@tech9.com",
     country: "United Kingdom",
-    status: "rolling_off_soon",
-    current_client: "GlobalTech",
+    current_client_id: find_client_id_by_name(clients, "GlobalTech"),
     industry_experience: "7 years",
+    notice_date: Date.current + 20.days,
     target_rate: 110,
     utilization: 60
   }
@@ -186,34 +218,6 @@ james_skills = skills.select { |s| [ "Java", "Spring Boot", "JavaScript", "React
 james_skills.each_with_index do |skill, index|
   EngineerSkill.create!(engineer: james, skill: skill, level: index < 3 ? "primary" : "secondary")
 end
-
-# Create Clients
-puts "Creating clients..."
-clients_data = [
-  {
-    name: "TechCorp Inc",
-    industry: "Technology"
-  },
-  {
-    name: "StartupXYZ",
-    industry: "Fintech"
-  },
-  {
-    name: "GlobalTech",
-    industry: "E-commerce"
-  },
-  {
-    name: "HealthTech Solutions",
-    industry: "Healthcare"
-  },
-  {
-    name: "EduTech Innovations",
-    industry: "Education"
-  }
-]
-
-clients = clients_data.map { |client_data| Client.create!(client_data) }
-puts "Created #{clients.count} clients"
 
 # Create Client Opportunities
 puts "Creating client opportunities..."
