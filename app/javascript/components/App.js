@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Button, Spinner } from 'react-bootstrap';
 import Layout from './layout/Layout';
 import Dashboard from './pages/Dashboard';
@@ -20,6 +20,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [previousPage, setPreviousPage] = useState('dashboard');
 
   // Check authentication status on component mount
   useEffect(() => {
@@ -38,7 +39,11 @@ function App() {
   }, []);
 
   // Handle navigation between pages
-  const handleNavigate = (pageId, params = {}) => {
+  const handleNavigate = useCallback((pageId, params = {}) => {
+    // Store the current page as previous page when navigating to detail pages
+    if ((pageId === 'engineer-detail' || pageId === 'opportunity-detail') && currentPage !== pageId) {
+      setPreviousPage(currentPage);
+    }
     setCurrentPage(pageId);
     if (params.opportunityId) {
       setOpportunityId(params.opportunityId);
@@ -55,7 +60,7 @@ function App() {
     } else {
       setEngineerId(null);
     }
-  };  // Handle global search
+  }, [currentPage]);  // Handle global search
   const handleSearch = (query) => {
     setSearchQuery(query);
     console.log('Global search:', query);
@@ -69,7 +74,7 @@ function App() {
     return () => {
       window.onNavigate = null;
     };
-  }, []);
+  }, [handleNavigate]);
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -78,13 +83,13 @@ function App() {
       case 'engineers':
         return <EngineersList searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'engineer-detail':
-        return <EngineerDetail engineerId={engineerId} onNavigate={handleNavigate} />;
+        return <EngineerDetail engineerId={engineerId} onNavigate={handleNavigate} previousPage={previousPage} />;
       case 'clients':
         return <ClientsList searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'opportunities':
         return <OpportunitiesList searchQuery={searchQuery} onNavigate={handleNavigate} clientFilter={clientFilter} />;
       case 'opportunity-detail':
-        return <OpportunityDetail opportunityId={opportunityId} onNavigate={handleNavigate} />;
+        return <OpportunityDetail opportunityId={opportunityId} onNavigate={handleNavigate} previousPage={previousPage} />;
       case 'matching':
         return <MatchingPage searchQuery={searchQuery} onNavigate={handleNavigate} />;
       case 'notifications':

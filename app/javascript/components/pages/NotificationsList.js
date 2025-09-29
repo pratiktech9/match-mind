@@ -21,7 +21,7 @@ const NotificationsList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage] = useState(20);
   const [filters, setFilters] = useState({
-    status: '',
+    status: 'unread', // Default to unread notifications
     priority: '',
     notification_type: ''
   });
@@ -68,6 +68,7 @@ const NotificationsList = () => {
 
   const markAsRead = async (notificationId) => {
     try {
+      console.log(`Marking notification ${notificationId} as read`);
       const response = await fetch(`/api/v1/notifications/${notificationId}/mark_read`, {
         method: 'PATCH',
         headers: {
@@ -75,8 +76,13 @@ const NotificationsList = () => {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
       });
+      console.log('Mark read response:', response.status, response.statusText);
       if (response.ok) {
+        const data = await response.json();
+        console.log('Mark read success:', data);
         fetchNotifications(); // Refresh notifications
+      } else {
+        console.error('Mark read failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -85,6 +91,7 @@ const NotificationsList = () => {
 
   const markAllAsRead = async () => {
     try {
+      console.log('Marking all notifications as read...');
       const response = await fetch('/api/v1/notifications/mark_all_read', {
         method: 'PATCH',
         headers: {
@@ -92,8 +99,13 @@ const NotificationsList = () => {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
       });
+      console.log('Mark all read response:', response.status, response.statusText);
       if (response.ok) {
-        fetchNotifications(); // Refresh notifications
+        const data = await response.json();
+        console.log('Mark all read success:', data);
+        fetchNotifications(); // Refresh notifications - will show empty state since default filter is now 'unread'
+      } else {
+        console.error('Mark all read failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -102,6 +114,7 @@ const NotificationsList = () => {
 
   const archiveNotification = async (notificationId) => {
     try {
+      console.log(`Archiving notification ID: ${notificationId}`);
       const response = await fetch(`/api/v1/notifications/${notificationId}/archive`, {
         method: 'PATCH',
         headers: {
@@ -109,8 +122,13 @@ const NotificationsList = () => {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
       });
+      console.log('Archive response:', response.status, response.statusText);
       if (response.ok) {
+        const data = await response.json();
+        console.log('Archive success:', data);
         fetchNotifications(); // Refresh notifications
+      } else {
+        console.error('Archive failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error archiving notification:', error);
@@ -238,9 +256,9 @@ const NotificationsList = () => {
                 <Col md={3} className="d-flex align-items-end">
                   <Button 
                     variant="outline-secondary" 
-                    onClick={() => setFilters({ status: '', priority: '', notification_type: '' })}
+                    onClick={() => setFilters({ status: 'unread', priority: '', notification_type: '' })}
                   >
-                    Clear Filters
+                    Reset Filters
                   </Button>
                 </Col>
               </Row>
@@ -253,7 +271,14 @@ const NotificationsList = () => {
               <Card.Body className="text-center py-5">
                 <div className="text-muted">
                   <h4>No notifications found</h4>
-                  <p>Try adjusting your filters or generate new insights.</p>
+                  {filters.status === 'unread' ? (
+                    <div>
+                      <p>✅ All notifications have been marked as read!</p>
+                      <p>Switch to &quot;All Statuses&quot; to see read notifications, or generate new insights.</p>
+                    </div>
+                  ) : (
+                    <p>Try adjusting your filters or generate new insights.</p>
+                  )}
                 </div>
               </Card.Body>
             </Card>
