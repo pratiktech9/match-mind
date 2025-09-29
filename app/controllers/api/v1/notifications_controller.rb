@@ -1,5 +1,5 @@
 class Api::V1::NotificationsController < Api::V1::ApplicationController
-  before_action :set_notification, only: [ :show, :update, :destroy ]
+  before_action :set_notification, only: [ :show, :update, :destroy, :mark_read, :mark_unread, :archive ]
 
   # GET /api/v1/notifications
   def index
@@ -8,7 +8,7 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
     # Apply filters
     @notifications = @notifications.where(status: params[:status]) if params[:status].present?
     @notifications = @notifications.where(priority: params[:priority]) if params[:priority].present?
-    @notifications = @notifications.where(notification_type: params[:type]) if params[:type].present?
+    @notifications = @notifications.where(notification_type: params[:notification_type]) if params[:notification_type].present?
     @notifications = @notifications.where(engineer_id: params[:engineer_id]) if params[:engineer_id].present?
     @notifications = @notifications.where(client_id: params[:client_id]) if params[:client_id].present?
 
@@ -143,7 +143,7 @@ class Api::V1::NotificationsController < Api::V1::ApplicationController
 
   def set_notification
     @notification = Notification.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
+  rescue ActiveRecord::RecordNotFound => e
     render json: { error: "Notification not found" }, status: :not_found
   end
 

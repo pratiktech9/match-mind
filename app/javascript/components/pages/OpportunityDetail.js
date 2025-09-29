@@ -4,7 +4,7 @@ import {
   Modal
 } from 'react-bootstrap';
 
-const OpportunityDetail = ({ opportunityId, onNavigate }) => {
+const OpportunityDetail = ({ opportunityId, onNavigate, previousPage = 'opportunities' }) => {
   const [opportunity, setOpportunity] = useState(null);
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +61,7 @@ const OpportunityDetail = ({ opportunityId, onNavigate }) => {
   }, [opportunityId, fetchOpportunityDetails, fetchMatches]);
 
   const handleBackToList = () => {
-    onNavigate('opportunities');
+    onNavigate(previousPage);
   };
 
   const handleContactEngineer = (engineer) => {

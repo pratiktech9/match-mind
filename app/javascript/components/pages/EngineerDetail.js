@@ -3,7 +3,7 @@ import {
   Container, Row, Col, Card, Button, Badge, Spinner, Alert
 } from 'react-bootstrap';
 
-const EngineerDetail = ({ engineerId, onNavigate }) => {
+const EngineerDetail = ({ engineerId, onNavigate, previousPage = 'engineers' }) => {
   const [engineer, setEngineer] = useState(null);
   const [matchingOpportunities, setMatchingOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +57,7 @@ const EngineerDetail = ({ engineerId, onNavigate }) => {
   }, [engineerId, fetchEngineerDetails, fetchMatchingOpportunities]);
 
   const handleBackToList = () => {
-    onNavigate('engineers');
+    onNavigate(previousPage);
   };
 
   const handleViewOpportunity = (opportunityId) => {
