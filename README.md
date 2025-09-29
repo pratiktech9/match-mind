@@ -199,7 +199,13 @@ GOOGLE_CLIENT_ID=your_google_id          # OAuth authentication
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 **License**
+## � **Key Contributors**
+
+- **Pratik Bhagwat** - Development
+- **Nishant Mosam** - Development
+- **Madhura Pandita** - UI Design, QA
+
+## �📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
