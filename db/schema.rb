@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_29_051639) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_29_091544) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -71,7 +71,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_29_051639) do
     t.string "email"
     t.string "country"
     t.string "status"
-    t.string "industry_experience"
     t.date "notice_date"
     t.date "expected_end_date"
     t.date "return_date"
@@ -81,6 +80,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_29_051639) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "current_client_id"
+    t.float "industry_experience", default: 0.0
     t.index ["current_client_id"], name: "index_engineers_on_current_client_id"
     t.index ["email"], name: "index_engineers_on_email"
   end

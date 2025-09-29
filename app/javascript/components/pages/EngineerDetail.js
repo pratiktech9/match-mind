@@ -259,7 +259,7 @@ const EngineerDetail = ({ engineerId, onNavigate, previousPage = 'engineers' }) 
                         <div className="row">
                           <div className="col-md-6">
                             <div className="mb-2">
-                              <strong>Specialization:</strong> {engineer.industry_experience || 'Various Industries'}
+                              <strong>Industry Experience:</strong> {engineer.industry_experience || 0} years
                             </div>
                           </div>
                           <div className="col-md-6">

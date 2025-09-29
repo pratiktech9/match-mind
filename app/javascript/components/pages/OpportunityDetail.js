@@ -432,7 +432,7 @@ const OpportunityDetail = ({ opportunityId, onNavigate, previousPage = 'opportun
                     ))}
                   </div>
                   <div className="mt-2">
-                    <strong>Industry Experience:</strong> {selectedEngineer.industry_experience || 'Various'}
+                    <strong>Industry Experience:</strong> {selectedEngineer.industry_experience || 0} years
                   </div>
                 </Card.Body>
               </Card>

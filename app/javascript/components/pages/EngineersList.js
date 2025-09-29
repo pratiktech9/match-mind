@@ -14,7 +14,6 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [filters, setFilters] = useState({
     status: '',
     skills: '',
-    availability: '',
     experience: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,16 +28,15 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   const [newEngineer, setNewEngineer] = useState({
     name: '',
     email: '',
-    country: '',
-    current_client_id: '',
-    industry_experience: '',
-    notice_date: '',
-    expected_end_date: '',
-    return_date: '',
-    notes: '',
-    utilization: '',
-    target_rate: '',
-    skill_ids: []
+    phone: '',
+    experience_years: '',
+    rate_per_hour: '',
+    location: '',
+    status: 'available',
+    skills_list: '',
+    specializations: '',
+    industry_experience: 0,
+    notice_date: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState(null);
@@ -220,7 +218,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
       email: '',
       country: '',
       current_client_id: '',
-      industry_experience: '',
+      industry_experience: 0,
       notice_date: '',
       expected_end_date: '',
       return_date: '',
@@ -340,7 +338,12 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
   };
 
   const formatStatus = (status) => {
-    return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const statusMap = {
+      'available': 'Available',
+      'rolling_off_soon': 'Rolling Off Soon',
+      'on_project': 'On Project'
+    };
+    return statusMap[status] || status;
   };
 
   const getSortIcon = (field) => {
@@ -503,17 +506,10 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                       <th className="border-0">Skills</th>
                       <th
                         style={{ cursor: 'pointer' }}
-                        onClick={() => handleSort('experience_years')}
+                        onClick={() => handleSort('industry_experience')}
                         className="border-0"
                       >
-                        Experience {getSortIcon('experience_years')}
-                      </th>
-                      <th
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleSort('availability_date')}
-                        className="border-0"
-                      >
-                        Availability {getSortIcon('availability_date')}
+                        Industry Experience {getSortIcon('industry_experience')}
                       </th>
                       <th className="border-0">Actions</th>
                     </tr>
@@ -585,16 +581,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                             </div>
                           </td>
                           <td className="py-3">
-                            <span className="fw-medium">{engineer.experience_years} years</span>
-                          </td>
-                          <td className="py-3">
-                            {engineer.availability_date ? (
-                              <span className="text-muted">
-                                {new Date(engineer.availability_date).toLocaleDateString()}
-                              </span>
-                            ) : (
-                              <Badge bg="success">Available Now</Badge>
-                            )}
+                            <span className="fw-medium">{engineer.industry_experience || 0} years</span>
                           </td>
                           <td className="py-3">
                             <div className="d-flex gap-2">
@@ -618,7 +605,7 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="text-center py-5">
+                        <td colSpan="5" className="text-center py-5">
                           <div className="text-muted">
                             <div className="mb-2" style={{ fontSize: '3rem' }}>🔍</div>
                             <h5>No Engineers Found</h5>
@@ -778,13 +765,15 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Industry Experience</Form.Label>
+                  <Form.Label>Industry Experience (Years)</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
                     name="industry_experience"
                     value={newEngineer.industry_experience}
                     onChange={handleInputChange}
-                    placeholder="e.g. FinTech, Healthcare"
+                    placeholder="e.g. 5"
+                    min="0"
+                    step="0.1"
                   />
                 </Form.Group>
               </Col>
@@ -1004,13 +993,15 @@ const EngineersList = ({ searchQuery = '', onNavigate }) => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Industry Experience</Form.Label>
+                  <Form.Label>Industry Experience (Years)</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
                     name="industry_experience"
-                    value={editingEngineer?.industry_experience || ''}
+                    value={editingEngineer?.industry_experience || 0}
                     onChange={handleEditInputChange}
-                    placeholder="e.g. FinTech, Healthcare"
+                    placeholder="e.g. 5"
+                    min="0"
+                    step="0.1"
                   />
                 </Form.Group>
               </Col>
@@ -1147,7 +1138,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
   return (
     <div className="p-3 bg-light border-bottom">
       <Row>
-        <Col md={3}>
+        <Col md={4}>
           <Form.Group>
             <Form.Label className="small fw-bold text-muted">Status</Form.Label>
             <Form.Select
@@ -1162,7 +1153,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             </Form.Select>
           </Form.Group>
         </Col>
-        <Col md={3}>
+        <Col md={4}>
           <Form.Group>
             <Form.Label className="small fw-bold text-muted">Skills</Form.Label>
             <Form.Select
@@ -1179,23 +1170,7 @@ const EngineersFilterSection = memo(({ filters, onFilterChange, skills }) => {
             </Form.Select>
           </Form.Group>
         </Col>
-        <Col md={3}>
-          <Form.Group>
-            <Form.Label className="small fw-bold text-muted">Availability</Form.Label>
-            <Form.Select
-              size="sm"
-              value={filters.availability}
-              onChange={(e) => handleFilterChange('availability', e.target.value)}
-            >
-              <option value="">All</option>
-              <option value="immediate">Immediate</option>
-              <option value="2_weeks">Within 2 weeks</option>
-              <option value="1_month">Within 1 month</option>
-              <option value="3_months">Within 3 months</option>
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={3}>
+        <Col md={4}>
           <Form.Group>
             <Form.Label className="small fw-bold text-muted">Experience</Form.Label>
             <Form.Select
