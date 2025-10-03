@@ -52,15 +52,20 @@ class Api::MatchingController < ApplicationController
 
   def find_matches_for_opportunity
     opportunity = ClientOpportunity.find(params[:opportunity_id])
-    matches = MatchingService.find_matches_for_opportunity(opportunity)
+
+    # Fetch existing matches from database instead of live AI matching
+    matches = Match.includes(:engineer, :client)
+                   .where(client_opportunity: opportunity)
+                   .order(score: :desc)
+                   .limit(10) # Limit to top 10 matches
 
     render json: {
       opportunity: opportunity.as_json(include: [ :client, :skills ]),
       matches: matches.map do |match|
         {
-          engineer: match[:engineer].as_json(include: :skills),
-          score: match[:score],
-          explanation: match[:explanation]
+          engineer: match.engineer.as_json(include: :skills),
+          score: match.score,
+          explanation: match.explanation
         }
       end
     }
@@ -68,15 +73,20 @@ class Api::MatchingController < ApplicationController
 
   def find_matches_for_engineer
     engineer = Engineer.find(params[:engineer_id])
-    matches = MatchingService.find_matches_for_engineer(engineer)
+
+    # Fetch existing matches from database instead of live AI matching
+    matches = Match.includes(:client_opportunity, :client)
+                   .where(engineer: engineer)
+                   .order(score: :desc)
+                   .limit(10) # Limit to top 10 matches
 
     render json: {
       engineer: engineer.as_json(include: :skills),
       matches: matches.map do |match|
         {
-          opportunity: match[:opportunity].as_json(include: [ :client, :skills ]),
-          score: match[:score],
-          explanation: match[:explanation]
+          opportunity: match.client_opportunity.as_json(include: [ :client, :skills ]),
+          score: match.score,
+          explanation: match.explanation
         }
       end
     }
